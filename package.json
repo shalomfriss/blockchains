@@ -1,0 +1,22 @@
+{
+  "name": "blockchains",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "big-integer": "^1.6.26",
+    "bigi": "^1.4.2",
+    "bitcoinjs-lib": "^3.3.2",
+    "bs58": "^4.0.1",
+    "js-sha256": "^0.9.0",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-scripts": "1.0.17",
+    "sjcl": "^1.0.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
