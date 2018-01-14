@@ -18,29 +18,11 @@ class App extends Component {
     var address = keyPair.getAddress()
 	log(address)
     
-    
-    /*
-    var b = new Base58()
-    b.encode("This is a test")
-    
-    var b1 = BigInteger.fromHex("02")
-    var b2 = BigInteger.fromHex("0100")
-    var b3 = b1.pow(b2)
-    var b4 = BigInteger.fromHex("01")
-    
-    var b5 = b3.subtract(b4)
-    
-    console.log(b5.toHex())
-    
-    var maximumByte = bigInt("FF", 16);
-	
-	console.log("BIG")
-	*/
-	
+    	
 	var pkey = KeyGenerator.generatePrivateKey()
 	KeyGenerator.generatePrivateKeyWIF(pkey)
 	
-	//console.log((Math.pow(2, 256) - 1) * Math.random())
+    
     
     return (
       <div className="App">

@@ -1,5 +1,4 @@
 import bigInt from 'big-integer';
-import sha256 from 'js-sha256';
 import bs58 from 'bs58';
 import sjcl from 'sjcl';
 
@@ -9,7 +8,6 @@ export class KeyGenerator {
 		Generate a private key for Bitcoin
 	*/
 	static generatePrivateKey() {
-		
 		
 		/*
 		var randArr = new Uint8Array(32) //create a typed array of 32 bytes (256 bits)
@@ -21,23 +19,16 @@ export class KeyGenerator {
 		}
 		*/
 		
-		//var privateKeyHex = Crypto.util.bytesToHex(privateKeyBytes).toUpperCase()
-		//console.log(privateKeyHex)
-		
-		//console.log("RAND")
-		//console.log(privateKeyBytes)
-		
-		
 		//Calculate upper limit
 		var b1 = bigInt(2).pow(256)
 		b1 = b1.minus(1)
 		
 		//Generate large random
-		var rando = bigInt.randBetween(0, b1)
+		var rando = bigInt.randBetween(1, b1)
 		
-		//Create SHA256 hash
-		var hash = sha256.create();
-		hash.update(rando.toString(16))
+		var bits1 =  sjcl.codec.hex.toBits(rando.toString(16))
+		var hash1 = sjcl.hash.sha256.hash(bits1)  
+		var hex = sjcl.codec.hex.fromBits(hash1)
 		
 		//Check that the sha256 of the generated number is less than 2^256 - 1
 		var newInt = bigInt(b1.toString(), 16)
@@ -45,10 +36,10 @@ export class KeyGenerator {
 		{
 			var rando = bigInt.randBetween(1, b1)
 			
-			var hash = sha256.create();
-			hash.update(rando.toString(16))
+			bits1 =  sjcl.codec.hex.toBits(rando.toString(16))
+			hash1 = sjcl.hash.sha256.hash(bits1)  
 			
-			var newInt = bigInt(hash.hex(), 16)
+			var newInt = bigInt(sjcl.codec.hex.fromBits(hash1), 16)
 		}
 		
 		return newInt.toString(16)
@@ -60,8 +51,8 @@ export class KeyGenerator {
 	static generatePrivateKeyWIF(privateKey, testnet = false) {
 		
 		
-		privateKey = "1184CD2CDD640CA42CFC3A091C51D549B2F016D454B2774019C2B2D2E08529FD"
-		testnet = false
+		//privateKey = "1184CD2CDD640CA42CFC3A091C51D549B2F016D454B2774019C2B2D2E08529FD"
+		//testnet = false
 		
 		console.log("Private key: " + privateKey)
 		
@@ -102,7 +93,30 @@ export class KeyGenerator {
 		console.log("WIF: " + wif)
 		
 		return wif
-
+		
+	}
+	
+	static checkWIFChecksum(wif, testnet = false) {
+		
+		var bytes = bs58.decode(wif)
+		var hex = bytes.toString('hex')
+		
+		var checksum = hex.substr(hex.length - 8).toUpperCase()
+		var sub = hex.substr(0, hex.length - 8)
+		
+		var bits1 		= sjcl.codec.hex.toBits(sub)
+		var hash1 		= sjcl.hash.sha256.hash(bits1);  
+		var doubleHash  = sjcl.hash.sha256.hash(hash1); 
+		var doubleHashHex = sjcl.codec.hex.fromBits(doubleHash)
+		
+		var calculatedChecksum = doubleHashHex.substr(0, 8).toUpperCase()
+		
+		if(calculatedChecksum == checksum) {
+			return true
+		}
+		else {
+			return false
+		}
 		
 	}
 	

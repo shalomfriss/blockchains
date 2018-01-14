@@ -1,6 +1,7 @@
 import bigInt from 'big-integer';
 
 export class ECC {
+	
 	static p = bigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F", 16)	
 	static a = bigInt("0", 16)
 	static b = bigInt("7", 16)
