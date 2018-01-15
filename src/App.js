@@ -20,8 +20,8 @@ class App extends Component {
     
     	
 	var pkey = KeyGenerator.generatePrivateKey()
-	KeyGenerator.generatePrivateKeyWIF(pkey)
-	
+	var wif = KeyGenerator.generatePrivateKeyWIF(pkey)
+	var privateKey = KeyGenerator.privateKeyFromWIF(wif)
     
     
     return (

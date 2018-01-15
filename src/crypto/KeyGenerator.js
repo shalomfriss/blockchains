@@ -46,7 +46,17 @@ export class KeyGenerator {
 		
 	}
 	
-	
+	static privateKeyFromWIF(wif) {
+		
+		//Convert from base58
+		var bytes = bs58.decode(wif)
+		var hex = bytes.toString('hex')
+
+		var subs = hex.substr(0, hex.length - 8)
+		var subs2 = subs.substr(2, hex.length)
+		
+		return subs2.toUpperCase()
+	}
 	
 	static generatePrivateKeyWIF(privateKey, testnet = false) {
 		
@@ -54,7 +64,7 @@ export class KeyGenerator {
 		//privateKey = "1184CD2CDD640CA42CFC3A091C51D549B2F016D454B2774019C2B2D2E08529FD"
 		//testnet = false
 		
-		console.log("Private key: " + privateKey)
+		//console.log("Private key: " + privateKey)
 		
 		
 		//Add WIF prefix
@@ -67,30 +77,30 @@ export class KeyGenerator {
 			privateKeyAndVersion = "80" + privateKey
 		}
 		
-		console.log("Private key with prefix: " + privateKeyAndVersion)
+		//console.log("Private key with prefix: " + privateKeyAndVersion)
 		
 		
 		var bits1 =  sjcl.codec.hex.toBits(privateKeyAndVersion)
 		var hash1 = sjcl.hash.sha256.hash(bits1);  
-		console.log("HASH1: " + sjcl.codec.hex.fromBits(hash1))
+		//console.log("HASH1: " + sjcl.codec.hex.fromBits(hash1))
 		
 		
 		var doubleHash  = sjcl.hash.sha256.hash(hash1); 
 		doubleHash = sjcl.codec.hex.fromBits(doubleHash); 
-		console.log("HASH2: " + doubleHash)
+		//console.log("HASH2: " + doubleHash)
 		
 		var checksum = doubleHash.substr(0, 8).toUpperCase()
-		console.log("Checksum: " + checksum)
+		//console.log("Checksum: " + checksum)
 		
 		//Add to current result
 		var hashWithChecksum = privateKeyAndVersion + checksum
-		console.log("Hash With checksum added: " + hashWithChecksum)
+		//console.log("Hash With checksum added: " + hashWithChecksum)
 		
 		//Encode to base58
 		const bytes = Buffer.from(hashWithChecksum, 'hex')
 		var wif = bs58.encode(bytes)
 		
-		console.log("WIF: " + wif)
+		//console.log("WIF: " + wif)
 		
 		return wif
 		

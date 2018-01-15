@@ -25,8 +25,16 @@ test('check the wif checksum', () => {
 	var pkey = "1184CD2CDD640CA42CFC3A091C51D549B2F016D454B2774019C2B2D2E08529FD"
 	var wif = KeyGenerator.generatePrivateKeyWIF(pkey, false)
 	
-	console.log("PRE WIF: " + wif)
 	var test = KeyGenerator.checkWIFChecksum(wif)
 	
 	expect(test).toBe(true)
+})
+
+test("check private key from wif", () => {
+	var pkey = "1184CD2CDD640CA42CFC3A091C51D549B2F016D454B2774019C2B2D2E08529FD"
+	var wif = KeyGenerator.generatePrivateKeyWIF(pkey, false)
+	
+	var keyFromWif = KeyGenerator.privateKeyFromWIF(wif)
+	expect(keyFromWif).toEqual(pkey)
+	
 })
