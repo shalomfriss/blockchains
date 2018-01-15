@@ -7,8 +7,9 @@ import bigi from 'bigi';
 import { Base58 } from './crypto/Base58';
 import bigInt from 'big-integer';
 import { KeyGenerator } from './crypto/KeyGenerator';
-import ECC from './crypto/ECC';
 
+
+console.log("Load App")
 class App extends Component {
   render() {
 	  
@@ -22,6 +23,8 @@ class App extends Component {
 	var pkey = KeyGenerator.generatePrivateKey()
 	var wif = KeyGenerator.generatePrivateKeyWIF(pkey)
 	var privateKey = KeyGenerator.privateKeyFromWIF(wif)
+    
+    KeyGenerator.generatePublicKey()
     
     
     return (

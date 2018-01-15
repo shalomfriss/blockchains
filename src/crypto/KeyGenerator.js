@@ -1,6 +1,12 @@
 import bigInt from 'big-integer';
 import bs58 from 'bs58';
-import sjcl from 'sjcl';
+
+//Hack to get the sjcl modules to load correctly
+import {sjcl} from './LocalExports';
+import 'sjcl/core/bn'; 
+import 'sjcl/core/ecc'; 
+
+
 
 export class KeyGenerator {
 	
@@ -13,7 +19,7 @@ export class KeyGenerator {
 		var randArr = new Uint8Array(32) //create a typed array of 32 bytes (256 bits)
 		window.crypto.getRandomValues(randArr)
 		
-		var privateKeyBytes = []
+		var privateKeyBytes = []s
 		for (var i = 0; i < randArr.length; ++i) {
 		  privateKeyBytes[i] = randArr[i]
 		}
@@ -131,6 +137,9 @@ export class KeyGenerator {
 	}
 	
 	static generatePublicKey() {
+		
+		console.log("Public")
+		console.log(sjcl.ecc)
 		
 	}
 	
