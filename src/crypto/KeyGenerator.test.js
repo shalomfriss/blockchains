@@ -99,3 +99,11 @@ test("Check bitcoin address generation", () => {
 		
 })
 
+test("Check compressed bitcoin address generation", () => {
+	var pkey = "3aba4162c7251c891207b747840551a71939b0de081f85c4e44cf7c13e41daa6"
+	var pubkey = KeyGenerator.generateCompressedBitcoinPublicKey(pkey)
+	var address = KeyGenerator.generateBitcoinAddressFromPublicKey(pubkey)
+	expect(address).toEqual("14cxpo3MBCYYWCgF74SWTdcmxipnGUsPw3")
+		
+})
+
