@@ -15,9 +15,8 @@ export class KeyGenerator {
 	*/
 	static generatePrivateKey() {
 		
-		var num = new sjcl.bn(2)
-		var pow = new sjcl.bn(256)
-		var limit = num.power(pow)
+		var ecdsa = "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364140"
+		var limit = new sjcl.bn(ecdsa)
 		
 		var privateKey = KeyGenerator.getRandomNumber()
 		
@@ -29,6 +28,16 @@ export class KeyGenerator {
 		}
 		return privateKey		
 	}
+	
+	/** 
+		convert a hex string to base 64
+	*/
+	static base64(hex) {
+		var pkeyBits = sjcl.codec.hex.toBits(hex.toUpperCase())
+		var b64Key = sjcl.codec.base64.fromBits(pkeyBits)
+		return b64Key
+	}
+
 	
 	/**
 		Generate a random 256 bit number
@@ -44,7 +53,10 @@ export class KeyGenerator {
 		
 		return hex
 	}
-		
+	
+	/**
+		Get a private key from a wif	
+	*/
 	static privateKeyFromWIF(wif) {
 		
 		//Convert from base58
@@ -57,7 +69,12 @@ export class KeyGenerator {
 		return subs2.toUpperCase()
 	}
 	
-	static generatePrivateKeyWIF(privateKey, testnet = false) {
+	static wifCompressedFromPrivateKey(privateKey, testnet = false) {
+		var key = KeyGenerator.wifFromPrivateKey(privateKey, testnet, true)
+		return key
+	}
+	
+	static wifFromPrivateKey(privateKey, testnet = false, compressed = false) {
 		
 		
 		//privateKey = "1184CD2CDD640CA42CFC3A091C51D549B2F016D454B2774019C2B2D2E08529FD"
@@ -70,12 +87,15 @@ export class KeyGenerator {
 		//testnet / regtest
 		var privateKeyAndVersion = "";
 		if(testnet == true) {
-			privateKeyAndVersion = "ef" + privateKey
+			privateKeyAndVersion = "ef" + privateKey.toUpperCase()
 		}
 		else { //mainnet 
-			privateKeyAndVersion = "80" + privateKey
+			privateKeyAndVersion = "80" + privateKey.toUpperCase()
 		}
 		
+		if(compressed === true) {
+			privateKeyAndVersion += "01"
+		}
 		//console.log("Private key with prefix: " + privateKeyAndVersion)
 		
 		
@@ -121,7 +141,7 @@ export class KeyGenerator {
 		var calculatedChecksum = doubleHashHex.substr(0, 8).toUpperCase()
 		
 		if(calculatedChecksum == checksum) {
-			return true
+			return true 
 		}
 		else {
 			return false
@@ -129,20 +149,65 @@ export class KeyGenerator {
 		
 	}
 	
-	static generatePublicKeyFromPrivateKey(privateKey) {
+	static generatePublicKey(privateKey) {
 		
-		console.log("Public")
-		//var eccPrivateKey = new sjcl.ecc.secretKey()
-		console.log(sjcl.ecc.ecdsa.secretKey)
+		/*
 		var keys = sjcl.ecc.ecdsa.generateKeys(sjcl.ecc.curves.k256)
-		console.log(keys)
 		console.log(sjcl.codec.hex.fromBits(keys.sec.get()))
 		console.log(sjcl.codec.hex.fromBits(keys.pub.get().x))
 		console.log(sjcl.codec.hex.fromBits(keys.pub.get().y))
+		*/
 		
+		//1E99423A4ED27608A15A2616A2B0E9E52CED330AC530EDCC32C8FFC6A526AEDD
 		
-		
+		var theNumber = new sjcl.bn("0x" + privateKey)
+		var K = sjcl.ecc.curves.k256.G.mult(theNumber)
+				
+		var xhex = sjcl.codec.hex.fromBits(K.x.toBits())
+		var yhex = sjcl.codec.hex.fromBits(K.y.toBits())
+				
+		return {x: xhex.toString().toUpperCase(), y: yhex.toString().toUpperCase()}
 	}
+	
+	static generateBitcoinPublicKey(privateKey) {
+		
+		
+		var theNumber = new sjcl.bn("0x" + privateKey)
+		var K = sjcl.ecc.curves.k256.G.mult(theNumber)
+				
+		var xhex = sjcl.codec.hex.fromBits(K.x.toBits())
+		var yhex = sjcl.codec.hex.fromBits(K.y.toBits())
+		
+		var pubKey = "04" + xhex.toString().toUpperCase() + yhex.toString().toUpperCase()
+		return pubKey
+	}
+	
+	static generateCompressedBitcoinPublicKey(privateKey) {
+		
+		
+		var theNumber = new sjcl.bn("0x" + privateKey)
+		var K = sjcl.ecc.curves.k256.G.mult(theNumber)
+				
+		var xhex = sjcl.codec.hex.fromBits(K.x.toBits())
+		var yhex = sjcl.codec.hex.fromBits(K.y.toBits())
+		
+		var yCoord = new sjcl.bn("0x" + yhex)
+		
+		var prefix = ""
+		var mult = new sjcl.bn(1)
+		if(yCoord.mulmod(mult, 2) == 0)
+		{
+			prefix = "02"
+		}
+		else
+		{
+			prefix = "03"
+		}
+		
+		var pubKey = prefix + xhex.toString().toUpperCase()
+		return pubKey
+	}
+	
 	
 	static generateAddress() {
 		

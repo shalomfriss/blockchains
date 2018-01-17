@@ -21,13 +21,24 @@ class App extends Component {
     
     
 	var pkey = KeyGenerator.generatePrivateKey()
-	var wif = KeyGenerator.generatePrivateKeyWIF(pkey)
+	var pkey = "1e99423a4ed27608a15a2616a2b0e9e52ced330ac530edcc32c8ffc6a526aedd"
+	console.log("Private key HEX: " + pkey)
+	
+	var wif = KeyGenerator.wifFromPrivateKey(pkey)
+	console.log("Private key WIF: " + wif)
+	
 	var privateKey = KeyGenerator.privateKeyFromWIF(wif)
-    
-    //KeyGenerator.generatePublicKey()
-    
-    
-    
+	
+	
+    var publicKey = KeyGenerator.generatePublicKey(pkey)
+    var uncompressedPublicKey = KeyGenerator.generateBitcoinPublicKey(pkey)
+    var compressedPublicKey = KeyGenerator.generateCompressedBitcoinPublicKey(pkey)
+	console.log("Uncompressed Public key: " + uncompressedPublicKey)
+	console.log("Compressed Public key: " + compressedPublicKey)
+	
+	var b64 = KeyGenerator.base64(pkey)
+	console.log("Base 64 private key: " + b64)
+	
     return (
       <div className="App">
         <header className="App-header">
