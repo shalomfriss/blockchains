@@ -1,4 +1,3 @@
-import bigInt from 'big-integer';
 import bs58 from 'bs58';
 
 //Hack to get the sjcl modules to load correctly
@@ -6,58 +5,52 @@ import {sjcl} from './LocalExports';
 import 'sjcl/core/bn'; 
 import 'sjcl/core/ecc'; 
 
-
+	
 
 export class KeyGenerator {
 	
-	/**
-		Generate a private key for Bitcoin
+	/** 
+		Generate a Bitcoin compliant private key.  
+		@return privateKey - A hex number that is between 1 and 2^256
 	*/
 	static generatePrivateKey() {
 		
-		/*
-		var randArr = new Uint8Array(32) //create a typed array of 32 bytes (256 bits)
-		window.crypto.getRandomValues(randArr)
+		var num = new sjcl.bn(2)
+		var pow = new sjcl.bn(256)
+		var limit = num.power(pow)
 		
-		var privateKeyBytes = []s
-		for (var i = 0; i < randArr.length; ++i) {
-		  privateKeyBytes[i] = randArr[i]
-		}
-		*/
+		var privateKey = KeyGenerator.getRandomNumber()
 		
-		//Calculate upper limit
-		var b1 = bigInt(2).pow(256)
-		b1 = b1.minus(1)
-		
-		//Generate large random
-		var rando = bigInt.randBetween(1, b1)
-		
-		var bits1 =  sjcl.codec.hex.toBits(rando.toString(16))
-		var hash1 = sjcl.hash.sha256.hash(bits1)  
-		var hex = sjcl.codec.hex.fromBits(hash1)
-		
-		//Check that the sha256 of the generated number is less than 2^256 - 1
-		var newInt = bigInt(b1.toString(), 16)
-		while(newInt.greaterOrEquals(b1)) 
+		var theNumber = new sjcl.bn("0x" + privateKey)
+		while(theNumber.greaterEquals(limit) != 0)
 		{
-			var rando = bigInt.randBetween(1, b1)
-			
-			bits1 =  sjcl.codec.hex.toBits(rando.toString(16))
-			hash1 = sjcl.hash.sha256.hash(bits1)  
-			
-			var newInt = bigInt(sjcl.codec.hex.fromBits(hash1), 16)
+			privateKey = KeyGenerator.getRandomNumber()
+			theNumber = new sjcl.bn("0x" + privateKey)
 		}
-		
-		return newInt.toString(16)
-		
+		return privateKey		
 	}
 	
+	/**
+		Generate a random 256 bit number
+		@return number - A random 256 bit number in hex	
+	*/
+	static getRandomNumber() {
+		var randWords = null
+		sjcl.random.startCollectors();
+		randWords = sjcl.random.randomWords(8, 8)
+	    sjcl.random.stopCollectors()
+		var hash1 = sjcl.hash.sha256.hash(randWords)  
+		var hex = sjcl.codec.hex.fromBits(hash1)
+		
+		return hex
+	}
+		
 	static privateKeyFromWIF(wif) {
 		
 		//Convert from base58
 		var bytes = bs58.decode(wif)
 		var hex = bytes.toString('hex')
-
+		
 		var subs = hex.substr(0, hex.length - 8)
 		var subs2 = subs.substr(2, hex.length)
 		
@@ -136,10 +129,22 @@ export class KeyGenerator {
 		
 	}
 	
-	static generatePublicKey() {
+	static generatePublicKeyFromPrivateKey(privateKey) {
 		
 		console.log("Public")
-		console.log(sjcl.ecc)
+		//var eccPrivateKey = new sjcl.ecc.secretKey()
+		console.log(sjcl.ecc.ecdsa.secretKey)
+		var keys = sjcl.ecc.ecdsa.generateKeys(sjcl.ecc.curves.k256)
+		console.log(keys)
+		console.log(sjcl.codec.hex.fromBits(keys.sec.get()))
+		console.log(sjcl.codec.hex.fromBits(keys.pub.get().x))
+		console.log(sjcl.codec.hex.fromBits(keys.pub.get().y))
+		
+		
+		
+	}
+	
+	static generateAddress() {
 		
 	}
 	

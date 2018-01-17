@@ -1,17 +1,18 @@
 import React from 'react';
 import { KeyGenerator } from './KeyGenerator';
-import bigInt from 'big-integer';
 
-test('check that private key is less than 2^256 - 1', () => {
+test('check that private key is less than 2^256 - 1 and is 256 bits', () => {
 	
-	var b1 = bigInt(2).pow(256)
-	b1 = b1.minus(1)
+	var num = new sjcl.bn(2)
+	var pow = new sjcl.bn(256)
+	var limit = num.power(pow)
 	
   	var privateKey = KeyGenerator.generatePrivateKey()
-  	var privateKeyInt = bigInt(privateKey.toString(), 16)
+  	var theNumber = new sjcl.bn("0x" + privateKey)  
+  	var lenInBytes = privateKey.toString().length/2
   	
-  	expect(privateKeyInt.lt(b1)).toBe(true)
-	
+  	expect(lenInBytes).toEqual(32)
+  	expect(theNumber.greaterEquals(limit)).toEqual(0)
 })
 
 test('check that wif generated from private key is accurate', () => {
@@ -36,5 +37,13 @@ test("check private key from wif", () => {
 	
 	var keyFromWif = KeyGenerator.privateKeyFromWIF(wif)
 	expect(keyFromWif).toEqual(pkey)
+	
+})
+
+test("Generate a public key from a private key", () => {
+	var pkey = "1184CD2CDD640CA42CFC3A091C51D549B2F016D454B2774019C2B2D2E08529FD"
+	
+	var pubKey = KeyGenerator.generatePublicKeyFromPrivateKey(pkey)
+	//expect(pubKey).toEqual(pkey)
 	
 })

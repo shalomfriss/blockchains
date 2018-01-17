@@ -5,26 +5,27 @@ import bitcoin from 'bitcoinjs-lib';
 import bigi from 'bigi';
 //import BigInteger from 'bigi';
 import { Base58 } from './crypto/Base58';
-import bigInt from 'big-integer';
 import { KeyGenerator } from './crypto/KeyGenerator';
 
 
 console.log("Load App")
 class App extends Component {
   render() {
-	  
+	
+	console.log("Generate a bitcoin address using bitcoinjs")
 	var hash = bitcoin.crypto.sha256(Buffer.from('correct horse battery staple'))
     var d = bigi.fromBuffer(hash)
     var keyPair = new bitcoin.ECPair(d)
     var address = keyPair.getAddress()
 	log(address)
     
-    	
+    
 	var pkey = KeyGenerator.generatePrivateKey()
 	var wif = KeyGenerator.generatePrivateKeyWIF(pkey)
 	var privateKey = KeyGenerator.privateKeyFromWIF(wif)
     
-    KeyGenerator.generatePublicKey()
+    //KeyGenerator.generatePublicKey()
+    
     
     
     return (
