@@ -21,6 +21,15 @@ test('check base 64 private key', () => {
 	expect(b64).toEqual("EYTNLN1kDKQs/DoJHFHVSbLwFtRUsndAGcKy0uCFKf0=")
 })
 
+test('check unbase 64 private key', () => {
+	var pkey = "1184CD2CDD640CA42CFC3A091C51D549B2F016D454B2774019C2B2D2E08529FD"
+	var b64 = KeyGenerator.base64(pkey, false)
+	
+	var unkey = KeyGenerator.unbase64(b64)
+	console.log(unkey)
+	expect(unkey).toEqual(pkey)
+})
+
 test('check that wif generated from private key is accurate', () => {
 	//tested with keys from the book  mastering bitcoin 
 	var pkey = "1e99423a4ed27608a15a2616a2b0e9e52ced330ac530edcc32c8ffc6a526aedd"
@@ -53,6 +62,14 @@ test("check private key from wif", () => {
 	expect(keyFromWif).toEqual(pkey)
 })
 
+test("check private key from  compressed wif", () => {
+	var pkey = "1e99423a4ed27608a15a2616a2b0e9e52ced330ac530edcc32c8ffc6a526aedd".toUpperCase()
+	var wif = KeyGenerator.wifCompressedFromPrivateKey(pkey, false)
+	
+	var keyFromWif = KeyGenerator.privateKeyFromWIF(wif)
+	expect(keyFromWif).toEqual(pkey + "01")
+})
+
 test("Generate a public key from a private key", () => {
 	var pkey = "1184CD2CDD640CA42CFC3A091C51D549B2F016D454B2774019C2B2D2E08529FD"
 	var pubKey = KeyGenerator.generatePublicKey(pkey)
@@ -72,6 +89,13 @@ test("Generate a compressed public key from a private key for bitcoin", () => {
 	var pkey = "1184CD2CDD640CA42CFC3A091C51D549B2F016D454B2774019C2B2D2E08529FD"
 	var pubKey = KeyGenerator.generateCompressedBitcoinPublicKey(pkey)
 	expect(pubKey).toEqual("03d0988bfa799f7d7ef9ab3de97ef481cd0f75d2367ad456607647edde665d6f6f".toUpperCase())
+		
+})
+
+test("Check bitcoin address generation", () => {
+	var pkey = "3aba4162c7251c891207b747840551a71939b0de081f85c4e44cf7c13e41daa6"
+	var address = KeyGenerator.generateBitcoinAddressFromPrivateKey(pkey)
+	expect(address).toEqual("1thMirt546nngXqyPEz532S8fLwbozud8")
 		
 })
 

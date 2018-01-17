@@ -39,6 +39,8 @@ class App extends Component {
 	var b64 = KeyGenerator.base64(pkey)
 	console.log("Base 64 private key: " + b64)
 	
+	KeyGenerator.generateBitcoinAddressFromPrivateKey('3aba4162c7251c891207b747840551a71939b0de081f85c4e44cf7c13e41daa6')
+	
     return (
       <div className="App">
         <header className="App-header">

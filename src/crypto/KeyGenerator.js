@@ -4,7 +4,7 @@ import bs58 from 'bs58';
 import {sjcl} from './LocalExports';
 import 'sjcl/core/bn'; 
 import 'sjcl/core/ecc'; 
-
+import 'sjcl/core/ripemd160';
 	
 
 export class KeyGenerator {
@@ -29,6 +29,13 @@ export class KeyGenerator {
 		return privateKey		
 	}
 	
+	static generateHexCompressedPrivateKey() {
+		
+		var key = KeyGenerator.generatePrivateKey()
+		var privateKey = key + "01"
+		return privateKey		
+	}
+	
 	/** 
 		convert a hex string to base 64
 	*/
@@ -36,6 +43,16 @@ export class KeyGenerator {
 		var pkeyBits = sjcl.codec.hex.toBits(hex.toUpperCase())
 		var b64Key = sjcl.codec.base64.fromBits(pkeyBits)
 		return b64Key
+	}
+
+	/** 
+		convert a hex string to base 64
+	*/
+	static unbase64(base64String) {
+		
+		var bits = sjcl.codec.base64.toBits(base64String)
+		var str = sjcl.codec.hex.fromBits(bits)
+		return str.toUpperCase()
 	}
 
 	
@@ -209,7 +226,36 @@ export class KeyGenerator {
 	}
 	
 	
-	static generateAddress() {
+	static generateBitcoinAddressFromPrivateKey(privateKey) {
+		var publicKey = KeyGenerator.generateBitcoinPublicKey(privateKey)
+		var address = KeyGenerator.generateBitcoinAddressFromPublicKey(publicKey)
+		return address
+	}
+	
+	static generateBitcoinAddressFromPublicKey(publicKey) {
+		var bits = sjcl.codec.hex.toBits(publicKey)
+		var hash1 = sjcl.hash.sha256.hash(bits);
+		var hash2 = sjcl.hash.ripemd160.hash(hash1)
+		var btc = "00" + sjcl.codec.hex.fromBits(hash2)
+		
+		bits = sjcl.codec.hex.toBits("0x" + btc)
+		hash1 = sjcl.hash.sha256.hash(bits);
+		hash1 = sjcl.hash.sha256.hash(hash1);
+		var doubleHash = sjcl.codec.hex.fromBits(hash1)
+		
+		var checksum = doubleHash.substr(0, 8)
+		btc = btc + checksum
+		
+		const bytes = Buffer.from(btc, 'hex')
+		var address = bs58.encode(bytes)
+		return address
+	}
+	
+	static generateBitcoinAddress() {
+		var privateKey = KeyGenerator.generatePrivateKey()
+		var publicKey = KeyGenerator.generateBitcoinPublicKey(privateKey)
+		var address = KeyGenerator.generateBitcoinAddressFromPublicKey(publicKey)
+		return address
 		
 	}
 	
