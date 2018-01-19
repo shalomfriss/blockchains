@@ -5,7 +5,7 @@ import {sjcl} from './LocalExports';
 import 'sjcl/core/bn'; 
 import 'sjcl/core/ecc'; 
 import 'sjcl/core/ripemd160';
-	
+import { CryptoUtil } from './CryptoUtil';
 
 export class KeyGenerator {
 	
@@ -18,12 +18,12 @@ export class KeyGenerator {
 		var ecdsa = "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364140"
 		var limit = new sjcl.bn(ecdsa)
 		
-		var privateKey = KeyGenerator.getRandomNumber()
+		var privateKey = CryptoUtil.getRandomNumber()
 		
 		var theNumber = new sjcl.bn("0x" + privateKey)
 		while(theNumber.greaterEquals(limit) != 0)
 		{
-			privateKey = KeyGenerator.getRandomNumber()
+			privateKey = CryptoUtil.getRandomNumber()
 			theNumber = new sjcl.bn("0x" + privateKey)
 		}
 		return privateKey		
@@ -34,41 +34,6 @@ export class KeyGenerator {
 		var key = KeyGenerator.generatePrivateKey()
 		var privateKey = key + "01"
 		return privateKey		
-	}
-	
-	/** 
-		convert a hex string to base 64
-	*/
-	static base64(hex) {
-		var pkeyBits = sjcl.codec.hex.toBits(hex.toUpperCase())
-		var b64Key = sjcl.codec.base64.fromBits(pkeyBits)
-		return b64Key
-	}
-
-	/** 
-		convert a hex string to base 64
-	*/
-	static unbase64(base64String) {
-		
-		var bits = sjcl.codec.base64.toBits(base64String)
-		var str = sjcl.codec.hex.fromBits(bits)
-		return str.toUpperCase()
-	}
-
-	
-	/**
-		Generate a random 256 bit number
-		@return number - A random 256 bit number in hex	
-	*/
-	static getRandomNumber() {
-		var randWords = null
-		sjcl.random.startCollectors();
-		randWords = sjcl.random.randomWords(8, 8)
-	    sjcl.random.stopCollectors()
-		var hash1 = sjcl.hash.sha256.hash(randWords)  
-		var hex = sjcl.codec.hex.fromBits(hash1)
-		
-		return hex
 	}
 	
 	/**
@@ -233,6 +198,7 @@ export class KeyGenerator {
 	}
 	
 	static generateBitcoinAddressFromPublicKey(publicKey) {
+		
 		var bits = sjcl.codec.hex.toBits(publicKey)
 		var hash1 = sjcl.hash.sha256.hash(bits);
 		var hash2 = sjcl.hash.ripemd160.hash(hash1)
@@ -249,6 +215,7 @@ export class KeyGenerator {
 		const bytes = Buffer.from(btc, 'hex')
 		var address = bs58.encode(bytes)
 		return address
+		
 	}
 	
 	static generateBitcoinAddress() {

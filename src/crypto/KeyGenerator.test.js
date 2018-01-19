@@ -1,5 +1,6 @@
 import React from 'react';
 import { KeyGenerator } from './KeyGenerator';
+import { CryptoUtil } from './KeyGenerator';
 
 test('check that private key is less than 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364140 and is 256 bits', () => {
 		
@@ -12,22 +13,6 @@ test('check that private key is less than 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAE
   	
   	expect(lenInBytes).toEqual(32)
   	expect(theNumber.greaterEquals(limit)).toEqual(0)
-})
-
-test('check base 64 private key', () => {
-	var pkey = "1184CD2CDD640CA42CFC3A091C51D549B2F016D454B2774019C2B2D2E08529FD"
-	var b64 = KeyGenerator.base64(pkey, false)
-	
-	expect(b64).toEqual("EYTNLN1kDKQs/DoJHFHVSbLwFtRUsndAGcKy0uCFKf0=")
-})
-
-test('check unbase 64 private key', () => {
-	var pkey = "1184CD2CDD640CA42CFC3A091C51D549B2F016D454B2774019C2B2D2E08529FD"
-	var b64 = KeyGenerator.base64(pkey, false)
-	
-	var unkey = KeyGenerator.unbase64(b64)
-	console.log(unkey)
-	expect(unkey).toEqual(pkey)
 })
 
 test('check that wif generated from private key is accurate', () => {

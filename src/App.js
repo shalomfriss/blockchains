@@ -4,9 +4,9 @@ import './App.css';
 import bitcoin from 'bitcoinjs-lib';
 import bigi from 'bigi';
 //import BigInteger from 'bigi';
-import { Base58 } from './crypto/Base58';
 import { KeyGenerator } from './crypto/KeyGenerator';
-
+import { CryptoUtil } from './crypto/CryptoUtil';
+import { WalletUtil } from './wallet/WalletUtil';
 
 console.log("Load App")
 class App extends Component {
@@ -36,10 +36,16 @@ class App extends Component {
 	console.log("Uncompressed Public key: " + uncompressedPublicKey)
 	console.log("Compressed Public key: " + compressedPublicKey)
 	
-	var b64 = KeyGenerator.base64(pkey)
+	var b64 = CryptoUtil.base64(pkey)
 	console.log("Base 64 private key: " + b64)
 	
 	KeyGenerator.generateBitcoinAddressFromPrivateKey('3aba4162c7251c891207b747840551a71939b0de081f85c4e44cf7c13e41daa6')
+	
+	
+	var mnemonic = WalletUtil.generateMnemonicWords()
+	console.log(mnemonic)
+	var seed = WalletUtil.createSeed(mnemonic)
+	console.log(seed)
 	
     return (
       <div className="App">
