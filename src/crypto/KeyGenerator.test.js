@@ -63,17 +63,19 @@ test("Generate a public key from a private key", () => {
 	expect(pubKey.y).toEqual("BDD594388756A7BEAF73B4822BC22D36E9BDA7DB82DF2B8B623673EEFC0B7495".toUpperCase())
 })
 
+
 test("Generate a public key from a private key for bitcoin", () => {
-	var pkey = "1184CD2CDD640CA42CFC3A091C51D549B2F016D454B2774019C2B2D2E08529FD"
+	var pkey = "3aba4162c7251c891207b747840551a71939b0de081f85c4e44cf7c13e41daa6"
 	var pubKey = KeyGenerator.generateBitcoinPublicKey(pkey)
-				expect(pubKey).toEqual("04d0988bfa799f7d7ef9ab3de97ef481cd0f75d2367ad456607647edde665d6f6fbdd594388756a7beaf73b4822bc22d36e9bda7db82df2b8b623673eefc0b7495".toUpperCase())
+				expect(pubKey).toEqual("045c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec243bcefdd4347074d44bd7356d6a53c495737dd96295e2a9374bf5f02ebfc176".toUpperCase())
 		
 })
 
+
 test("Generate a compressed public key from a private key for bitcoin", () => {
-	var pkey = "1184CD2CDD640CA42CFC3A091C51D549B2F016D454B2774019C2B2D2E08529FD"
+	var pkey = "3aba4162c7251c891207b747840551a71939b0de081f85c4e44cf7c13e41daa6"
 	var pubKey = KeyGenerator.generateCompressedBitcoinPublicKey(pkey)
-	expect(pubKey).toEqual("03d0988bfa799f7d7ef9ab3de97ef481cd0f75d2367ad456607647edde665d6f6f".toUpperCase())
+	expect(pubKey).toEqual("025c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec".toUpperCase())
 		
 })
 
@@ -87,6 +89,7 @@ test("Check bitcoin address generation", () => {
 test("Check compressed bitcoin address generation", () => {
 	var pkey = "3aba4162c7251c891207b747840551a71939b0de081f85c4e44cf7c13e41daa6"
 	var pubkey = KeyGenerator.generateCompressedBitcoinPublicKey(pkey)
+	console.log("Compressed public key: " + pubkey)
 	var address = KeyGenerator.generateBitcoinAddressFromPublicKey(pubkey)
 	expect(address).toEqual("14cxpo3MBCYYWCgF74SWTdcmxipnGUsPw3")
 		

@@ -21,7 +21,7 @@ export class KeyGenerator {
 		var privateKey = CryptoUtil.getRandomNumber()
 		
 		var theNumber = new sjcl.bn("0x" + privateKey)
-		while(theNumber.greaterEquals(limit) != 0)
+		while(theNumber.greaterEquals(limit) !== 0)
 		{
 			privateKey = CryptoUtil.getRandomNumber()
 			theNumber = new sjcl.bn("0x" + privateKey)
@@ -68,7 +68,7 @@ export class KeyGenerator {
 		//Add WIF prefix
 		//testnet / regtest
 		var privateKeyAndVersion = "";
-		if(testnet == true) {
+		if(testnet === true) {
 			privateKeyAndVersion = "ef" + privateKey.toUpperCase()
 		}
 		else { //mainnet 
@@ -122,7 +122,7 @@ export class KeyGenerator {
 		
 		var calculatedChecksum = doubleHashHex.substr(0, 8).toUpperCase()
 		
-		if(calculatedChecksum == checksum) {
+		if(calculatedChecksum === checksum) {
 			return true 
 		}
 		else {
@@ -175,9 +175,12 @@ export class KeyGenerator {
 		
 		var yCoord = new sjcl.bn("0x" + yhex)
 		
+		var ystr = yCoord.toString()
+		var lastChar = ystr.charAt(ystr.length - 1).toUpperCase()
+		
 		var prefix = ""
-		var mult = new sjcl.bn(1)
-		if(yCoord.mulmod(mult, 2) == 0)
+		if(lastChar === "0" || lastChar === "2" || lastChar === "4" || lastChar === "6" || 
+		lastChar === "8" || lastChar === "A" || lastChar === "C" || lastChar === "E") 
 		{
 			prefix = "02"
 		}

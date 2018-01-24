@@ -3,7 +3,6 @@ import logo from './logo.svg';
 import './App.css';
 import bitcoin from 'bitcoinjs-lib';
 import bigi from 'bigi';
-//import BigInteger from 'bigi';
 import { KeyGenerator } from './crypto/KeyGenerator';
 import { CryptoUtil } from './crypto/CryptoUtil';
 import { WalletUtil } from './wallet/WalletUtil';
@@ -17,22 +16,24 @@ class App extends Component {
     var d = bigi.fromBuffer(hash)
     var keyPair = new bitcoin.ECPair(d)
     var address = keyPair.getAddress()
-	log(address)
+	console.log("Bitcoinjs address: " + address)
     
     
 	var pkey = KeyGenerator.generatePrivateKey()
-	var pkey = "1e99423a4ed27608a15a2616a2b0e9e52ced330ac530edcc32c8ffc6a526aedd"
+	pkey = "1e99423a4ed27608a15a2616a2b0e9e52ced330ac530edcc32c8ffc6a526aedd"
 	console.log("Private key HEX: " + pkey)
 	
 	var wif = KeyGenerator.wifFromPrivateKey(pkey)
 	console.log("Private key WIF: " + wif)
 	
+	
 	var privateKey = KeyGenerator.privateKeyFromWIF(wif)
-	
-	
     var publicKey = KeyGenerator.generatePublicKey(pkey)
     var uncompressedPublicKey = KeyGenerator.generateBitcoinPublicKey(pkey)
     var compressedPublicKey = KeyGenerator.generateCompressedBitcoinPublicKey(pkey)
+    console.log("Private key: " + privateKey)
+    console.log("Public key: ")
+    console.log(publicKey)
 	console.log("Uncompressed Public key: " + uncompressedPublicKey)
 	console.log("Compressed Public key: " + compressedPublicKey)
 	
@@ -43,10 +44,12 @@ class App extends Component {
 	
 	
 	var mnemonic = WalletUtil.generateMnemonicWords()
-	console.log(mnemonic)
-	var seed = WalletUtil.createSeed(mnemonic)
-	console.log(seed)
+	console.log("Mnemonic: " + mnemonic)
 	
+	
+	var seed = WalletUtil.createSeed(mnemonic, "")	
+    console.log("SEED: " + seed)
+    
     return (
       <div className="App">
         <header className="App-header">
@@ -63,5 +66,3 @@ class App extends Component {
 
 export default App;
 
-export var log = console.log.bind(console)
-var print = console.log.bind(console)
