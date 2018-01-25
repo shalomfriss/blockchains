@@ -132,16 +132,7 @@ export class KeyGenerator {
 	}
 	
 	static generatePublicKey(privateKey) {
-		
-		/*
-		var keys = sjcl.ecc.ecdsa.generateKeys(sjcl.ecc.curves.k256)
-		console.log(sjcl.codec.hex.fromBits(keys.sec.get()))
-		console.log(sjcl.codec.hex.fromBits(keys.pub.get().x))
-		console.log(sjcl.codec.hex.fromBits(keys.pub.get().y))
-		*/
-		
-		//1E99423A4ED27608A15A2616A2B0E9E52CED330AC530EDCC32C8FFC6A526AEDD
-		
+				
 		var theNumber = new sjcl.bn("0x" + privateKey)
 		var K = sjcl.ecc.curves.k256.G.mult(theNumber)
 				

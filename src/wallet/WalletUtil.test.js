@@ -28,3 +28,28 @@ test('Check seed generator with passphrase', () => {
 	var seed = WalletUtil.createSeed(mnemonic, passphrase)  	
 	expect(seed).toEqual('3b5df16df2157104cfdd22830162a5e170c0161653e3afe6c88defeefb0818c793dbb28ab3ab091897d0715861dc8a18358f80b79d49acf64142ae57037d1d54')
 })
+
+test('Check that valid addresses are validated correctly', () => {
+	
+	expect(WalletUtil.validateBitcoinAddress("1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i")).toBe(true)
+	expect(WalletUtil.validateBitcoinAddress("1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62j")).toBe(false)
+
+    expect(WalletUtil.validateBitcoinAddress("1Q1pE5vPGEEMqRcVRMbtBK842Y6Pzo6nK9")).toBe(true)
+	expect(WalletUtil.validateBitcoinAddress("1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62X")).toBe(false)
+	expect(WalletUtil.validateBitcoinAddress("1ANNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i")).toBe(false)
+	expect(WalletUtil.validateBitcoinAddress("1A Na15ZQXAZUgFiqJ2i7Z2DPU2J6hW62i")).toBe(false)
+	expect(WalletUtil.validateBitcoinAddress("BZbvjr")).toBe(false)
+	expect(WalletUtil.validateBitcoinAddress("i55j")).toBe(false)
+	expect(WalletUtil.validateBitcoinAddress("1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62!")).toBe(false)
+	expect(WalletUtil.validateBitcoinAddress("1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62iz")).toBe(false)
+	expect(WalletUtil.validateBitcoinAddress("1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62izz")).toBe(false)
+	expect(WalletUtil.validateBitcoinAddress("1Q1pE5vPGEEMqRcVRMbtBK842Y6Pzo6nJ9")).toBe(false)
+	expect(WalletUtil.validateBitcoinAddress("1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW62I")).toBe(false)
+	
+})
+
+
+test('Check that non base58 addresses are not valid', () => {
+	expect(WalletUtil.validateBitcoinAddress("1AGNa15ZQXAZUgFiqJ2i7Z2DPU2J6hW620")).toBe(false)
+
+})
