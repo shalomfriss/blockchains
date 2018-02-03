@@ -6,6 +6,8 @@ import bigi from 'bigi';
 import { KeyGenerator } from './crypto/KeyGenerator';
 import { CryptoUtil } from './crypto/CryptoUtil';
 import { WalletUtil } from './wallet/WalletUtil';
+import { Validator } from './crypto/Validator';
+import { Bip39 } from './bip/Bip39';
 
 console.log("Load App")
 class App extends Component {
@@ -42,14 +44,21 @@ class App extends Component {
 	
 	var btcAddress = KeyGenerator.generateBitcoinAddressFromPrivateKey('3aba4162c7251c891207b747840551a71939b0de081f85c4e44cf7c13e41daa6')
 	console.log("BTC Address: " + btcAddress)
-	
-	var mnemonic = WalletUtil.generateMnemonicWords()
+	Validator.validateBitcoinAddress(btcAddress)
+    
+    
+    //WALLET
+	var mnemonic = Bip39.generateMnemonicWords()
 	console.log("Mnemonic: " + mnemonic)
 	
-	var seed = WalletUtil.createSeed(mnemonic, "")	
+	var seed = Bip39.createSeed(mnemonic, "")	
     console.log("SEED: " + seed)
     
-    WalletUtil.validateBitcoinAddress(btcAddress)
+    var keys = WalletUtil.createKeysFromSeed(seed)
+    console.log(keys)
+    
+    
+    var derived = WalletUtil.privateChildKeyFromPrivateParentKey(keys.m, keys.c, "0")
     
     
     return (

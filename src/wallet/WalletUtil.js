@@ -2,81 +2,111 @@ import {sjcl} from './../crypto/LocalExports';
 import 'sjcl/core/bn'; 
 import 'sjcl/core/ecc'; 
 import 'sjcl/core/ripemd160';
-import { CryptoUtil } from './../crypto/CryptoUtil';
 import Words from './wordlist.json';
 import crypto from 'crypto';
 import bs58 from 'bs58';
-
+import { KeyGenerator } from './../crypto/KeyGenerator';
+import { Bip39 } from './../bip/Bip39';
 
 export class WalletUtil {
-	static generateMnemonicWords() {
-		
-		//Gen randrom 256 bit number
-		var entropy = CryptoUtil.getRandomNumber128()
-		var mnemonic = WalletUtil.generateMnemonicWordsFromEntropy(entropy)	
-		return mnemonic
-	}	
 	
-	static generateMnemonicWordsFromEntropy(entropy) {
-				
-		//Take checksum of entropy/32
-		var bits =  sjcl.codec.hex.toBits(entropy)
-		var hash = sjcl.hash.sha256.hash(bits);
-		var hashString = sjcl.codec.hex.fromBits(hash); 
-		var checksum = hashString.substr(0, 1).toUpperCase()   
+	
+	/**
+		Create a set of keys from a seed.  This returns an object containing the master private key (m) the master chain code (c) 
+		and the master public key (K)
+		@param seed - The seed to use
+		@return Object - {m: 'master private key', c: 'master chain code', K: 'master public key'}	
+	*/
+	static createKeysFromSeed(seed) {
 		
-		entropy = entropy + checksum
-		bits = sjcl.codec.hex.toBits(entropy)
-		var len = sjcl.bitArray.bitLength(bits)
+		//Create a sha512 hash.. no real secret is used here 
+		var hmac = crypto.createHmac('sha512', '');
+		hmac.update(seed);
+		var digest = hmac.digest('hex')
+		console.log("KEYS")
+		console.log(digest);
+		var masterPrivateKey = digest.substr(0, 64) 
+		var masterChainCode = digest.substr(64, digest.length) 
 		
-		//Split the array into 12 sections of 11 bits each and get the digit
-		var mnemonicString = ""
-		for(var i = 0; i < len; i += 11) {
-			var n1 = sjcl.bitArray.extract(bits, i, 11)
-			mnemonicString += (i === 0 ? "" : " ") + Words.words[n1] 
+		console.log("Master private and Master chain code")
+		console.log(masterPrivateKey)
+		console.log(masterChainCode)
+		
+		
+		
+		var theNumber = new sjcl.bn("0x" + masterPrivateKey)
+		var K = sjcl.ecc.curves.k256.G.mult(theNumber)
+		var xhex = sjcl.codec.hex.fromBits(K.x.toBits())
+		var yhex = sjcl.codec.hex.fromBits(K.y.toBits())
+		
+		var masterPublicKey = {x:xhex, y:yhex}
+		//var pubKey = "04" + xhex.toString().toUpperCase() + yhex.toString().toUpperCase()
+		//console.log(pubKey.length)
+		
+		return {m: masterPrivateKey, c: masterChainCode, K: masterPublicKey}
+	}
+	
+	
+	/**
+		*ON HOLD
+		Derive a child key.  
+		@param parentPublicKey - The coordinate pair of the ECC multiplication of the private key by G
+		@param parentChainCode - The parent chain code to use
+		@param index - The index of the child to generate.  index < 2^31 corresponds to non hardened  2^31 =< index < 2^32 corresponds 
+						to hardened.  The format of this index is a hex string so as to accomodate large numbers.
+						2^31 = 0x80000000
+						2^32 = 0x100000000
+	*/
+	static deriveChildKey(parentPublicKey, parentChainCode, index) {
+		
+		var theIndex = new sjcl.bn("0x" + index)
+		var limit = new sjcl.bn("0x100000000")
+		var hardened = false
+		
+		if(theIndex.greaterEquals(limit)) {
+			hardened = true
 		}
-		return mnemonicString		
-	}	
-	
-	
-	
-	static createSeed(mnemonic, passphrase = "") {
-		
-		//5b56c417303faa3fcba7e57400e120a0ca83ec5a4fc9ffba757fbe63fbd77a89a1a3be4c67196f57c39a88b76373733891bfaba16ed27a813ceed498804c0570
-		
-		mnemonic = "army van defense carry jealous true garbage claim echo media make crunch"
-		var salt = "mnemonic" + passphrase
-		
-		//format the string
-		mnemonic = mnemonic.trim() 
-		mnemonic = mnemonic.split(/\s+/).join(" ");
-		
-		
-		//A bit of a cheat, had some issues with SJCL in this case, the code did not generate the correct
-		//hash so I had to use crypto
-		const seed = crypto.pbkdf2Sync(mnemonic, salt, 2048, 64, 'sha512');
-		return seed.toString('hex')
 		
 	}
 	
-	static validateBitcoinAddress(address) {
-		if (address.length < 26 || address.length > 35) return false        
-        
-        try {
-	        var dec = bs58.decode(address)
-	        var hex = dec.toString('hex')
-	        var checksum = hex.substring(hex.length - 8, hex.length);
-	        var strNoChecksum = hex.substring(0, hex.length - 8);
-	        var bits = sjcl.codec.hex.toBits(strNoChecksum)
-			var hash1 = sjcl.hash.sha256.hash(bits)
-			hash1 = sjcl.hash.sha256.hash(hash1)
-			var computedStr = sjcl.codec.hex.fromBits(hash1)		
-			var computedChecksum = computedStr.substr(0, 8)
+	/**
+		Derive a child key.  
+		@param parentPublicKey - The coordinate pair of the ECC multiplication of the private key by G
+		@param parentChainCode - The parent chain code to use
+		@param index - The index of the child to generate.  index < 2^31 corresponds to non hardened  2^31 =< index < 2^32 corresponds 
+						to hardened.  The format of this index is a hex string so as to accomodate large numbers.
+						2^31 = 0x80000000
+						2^32 = 0x100000000
+	*/
+	static privateChildKeyFromPrivateParentKey(privateParentKey, parentChainCode, index) {
+		var theIndex = new sjcl.bn("0x" + index)
+		var limit = new sjcl.bn("0x100000000")
+		var hardened = false
+		
+		if(theIndex.greaterEquals(limit)) {
+			hardened = true
+		}
+		
+		var str = ''
+		var hmac = crypto.createHmac('sha512', parentChainCode);
+		
+		if(hardened === true) {
+			str = '0x00' + privateParentKey + index
+		}
+		else {
+			var pkey = KeyGenerator.generateCompressedBitcoinPublicKey(privateParentKey)
+			console.log("PUB")
+			console.log(pkey)
+			str = pkey + index
+		}
+		
+		hmac.update(str)
+		var digest = hmac.digest('hex')
+		console.log("Step 1")
+		console.log(digest)
 			
-			return (computedChecksum.toUpperCase() === checksum.toUpperCase())
-        }
-        catch(e) {
-	        return false
-        }
 	}
+	
+	
+	
 }
