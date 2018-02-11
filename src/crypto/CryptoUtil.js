@@ -25,6 +25,7 @@ export class CryptoUtil {
 		var randWords = null
 		sjcl.random.startCollectors();
 		randWords = sjcl.random.randomWords(4, 8)
+		sjcl.random.stopCollectors()
 		console.log(randWords)
 		var temp = sjcl.codec.hex.fromBits(randWords)
 		
@@ -48,6 +49,19 @@ export class CryptoUtil {
 		var bits = sjcl.codec.base64.toBits(base64String)
 		var str = sjcl.codec.hex.fromBits(bits)
 		return str.toUpperCase()
+	}
+	
+	/**
+		Get a 32 bit double sha256 checksum from a hex string	
+	*/
+	static getChecksum32(hex) {
+		var bits1 =  sjcl.codec.hex.toBits(hex)
+		var hash1 = sjcl.hash.sha256.hash(bits1);  
+		var doubleHash  = sjcl.hash.sha256.hash(hash1); 
+		doubleHash = sjcl.codec.hex.fromBits(doubleHash); 
+		
+		var checksum = doubleHash.substr(0, 8).toUpperCase()
+		return checksum
 	}
 	
 }

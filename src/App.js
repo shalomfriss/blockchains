@@ -8,6 +8,7 @@ import { CryptoUtil } from './crypto/CryptoUtil';
 import { WalletUtil } from './wallet/WalletUtil';
 import { Validator } from './crypto/Validator';
 import { Bip39 } from './bip/Bip39';
+import { Bip32 } from './bip/Bip32';
 
 console.log("Load App")
 class App extends Component {
@@ -47,18 +48,25 @@ class App extends Component {
 	Validator.validateBitcoinAddress(btcAddress)
     
     
-    //WALLET
+    //WALLET 
 	var mnemonic = Bip39.generateMnemonicWords()
 	console.log("Mnemonic: " + mnemonic)
 	
-	var seed = Bip39.createSeed(mnemonic, "")	
+	
+	//var seed = Bip39.createSeed(mnemonic, "")	
+	//5b56c417303faa3fcba7e57400e120a0ca83ec5a4fc9ffba757fbe63fbd77a89a1a3be4c67196f57c39a88b76373733891bfaba16ed27a813ceed498804c0570
+    var seed = Bip39.createSeed('army van defense carry jealous true garbage claim echo media make crunch', "")	
+    
     console.log("SEED: " + seed)
     
-    var keys = WalletUtil.createKeysFromSeed(seed)
+    
+    var keys = Bip32.createMasterNode(seed)
+    console.log("KEYS")
     console.log(keys)
-    
-    
-    var derived = WalletUtil.privateChildKeyFromPrivateParentKey(keys.m, keys.c, "0")
+    console.log(Bip32.HIGH_BIT)
+    //var keys = WalletUtil.createKeysFromSeed(seed)
+    //console.log(keys)
+    //var derived = WalletUtil.privateChildKeyFromPrivateParentKey(keys.m, keys.c, "0")
     
     
     return (
