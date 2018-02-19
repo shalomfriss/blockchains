@@ -56,26 +56,11 @@ class App extends Component {
 	//var seed = Bip39.createSeed(mnemonic, "")	
 	//5b56c417303faa3fcba7e57400e120a0ca83ec5a4fc9ffba757fbe63fbd77a89a1a3be4c67196f57c39a88b76373733891bfaba16ed27a813ceed498804c0570
     var seed = Bip39.createSeed('army van defense carry jealous true garbage claim echo media make crunch', "")	
-    
+    var keys = Bip32.createMasterKeys(seed)
     console.log("SEED: " + seed)
+    console.log("Master private key: " + keys.m)
+   	console.log("Master public key: " + keys.M)       
     
-    var testSeed = "000102030405060708090a0b0c0d0e0f"
-    //testSeed = Bip39.createSeed(testSeed, "")	
-    var priKey = "xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi"
-    var pubKey = "xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8"
-    
-    var keys = Bip32.createMasterNode(testSeed)
-    
-    console.log("KEYS ++++++++++++++++++++++++++++++")
-    console.log(priKey)
-    console.log(keys.m)
-    console.log(pubKey)
-    console.log(keys.M)
-    
-    console.log(Bip32.HIGH_BIT)
-    //var keys = WalletUtil.createKeysFromSeed(seed)
-    //console.log(keys)
-    //var derived = WalletUtil.privateChildKeyFromPrivateParentKey(keys.m, keys.c, "0")
     
     
     return (

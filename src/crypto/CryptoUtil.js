@@ -2,6 +2,8 @@ import {sjcl} from './LocalExports';
 
 export class CryptoUtil {
 	
+	
+	
 	/**
 		Generate a random 256 bit number
 		@return number - A random 256 bit number in hex	
@@ -26,7 +28,6 @@ export class CryptoUtil {
 		sjcl.random.startCollectors();
 		randWords = sjcl.random.randomWords(4, 8)
 		sjcl.random.stopCollectors()
-		console.log(randWords)
 		var temp = sjcl.codec.hex.fromBits(randWords)
 		
 		return temp
@@ -63,5 +64,23 @@ export class CryptoUtil {
 		var checksum = doubleHash.substr(0, 8).toUpperCase()
 		return checksum
 	}
+	
+	static isHex(h) {
+		var re = /^[0-9a-fA-F]+$/g;
+		return re.test(h)
+	}
+
+	
+	
+	/*		
+		//Create base58 check representation of a compressed private key (01 added to the end)
+		var b58Private = "80" + masterPrivateKey + "01"
+		var b58PrivateChecksum =  CryptoUtil.getChecksum32(b58Private) 
+		b58Private = b58Private + b58PrivateChecksum
+		var bytes = Buffer.from(b58Private, 'hex')
+		var b58CompressedPrivateKey = bs58.encode(bytes)
+		console.log("BITCOIN PRIVATE KEY ENCODED: " + b58CompressedPrivateKey)
+		*/
+		
 	
 }

@@ -8,6 +8,30 @@ import crypto from 'crypto';
 
 
 export class Bip39 {
+	
+	/**
+		Generate entropy of size, 128, 160, 192, 224 or 256	
+		@param amount:Number - An integer that can take one of the values [128, 160, 192, 224, 256]
+	*/
+	static generateEntropy(amount) {
+		
+		if(amount % 32 != 0) {
+			console.log("ERROR: Entropy amount has to be a multiple of 32 and in the rance [128, 256]")
+			return
+		}
+		
+		var numWords = amount / 32
+		
+		var randWords = null
+		sjcl.random.startCollectors();
+		randWords = sjcl.random.randomWords(numWords, 8)
+	    sjcl.random.stopCollectors()
+		var hash1 = sjcl.hash.sha256.hash(randWords)  
+		var hex = sjcl.codec.hex.fromBits(hash1)
+		
+		return hex	
+	}
+	
 	static generateMnemonicWords() {
 		
 		//Gen randrom 128 bit number
@@ -17,23 +41,23 @@ export class Bip39 {
 	}	
 	
 	static generateMnemonicWordsFromEntropy(entropy) {
+				
+		var checksumLengthInBits = entropy.length * 4 / 32
 		
-		//Take checksum of entropy/32
 		var bits =  sjcl.codec.hex.toBits(entropy)
 		var hash = sjcl.hash.sha256.hash(bits);
-		var hashString = sjcl.codec.hex.fromBits(hash); 
-		var checksum = hashString.substr(0, 1).toUpperCase()   
-		
-		entropy = entropy + checksum
-		bits = sjcl.codec.hex.toBits(entropy)
-		var len = sjcl.bitArray.bitLength(bits)
+		var checksum =  sjcl.bitArray.bitSlice(hash, 0, checksumLengthInBits)
+		var newBits = sjcl.bitArray.concat(bits, checksum)
+		var len = sjcl.bitArray.bitLength(newBits)
 		
 		//Split the array into 12 sections of 11 bits each and get the digit
 		var mnemonicString = ""
+		var n1		
 		for(var i = 0; i < len; i += 11) {
-			var n1 = sjcl.bitArray.extract(bits, i, 11)
+			n1 = sjcl.bitArray.extract(newBits, i, 11)
 			mnemonicString += (i === 0 ? "" : " ") + Words.words[n1] 
 		}
+		
 		return mnemonicString		
 	}	
 	
