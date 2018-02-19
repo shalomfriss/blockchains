@@ -5,6 +5,7 @@ import 'sjcl/core/ripemd160';
 import { CryptoUtil } from './../crypto/CryptoUtil';
 import Words from './../wallet/wordlist.json';
 import crypto from 'crypto';
+import unorm from 'unorm';
 
 
 export class Bip39 {
@@ -14,8 +15,7 @@ export class Bip39 {
 		@param amount:Number - An integer that can take one of the values [128, 160, 192, 224, 256]
 	*/
 	static generateEntropy(amount) {
-		
-		if(amount % 32 != 0) {
+		if(amount % 32 != 0 || amount < 128 || amount > 256) {
 			console.log("ERROR: Entropy amount has to be a multiple of 32 and in the rance [128, 256]")
 			return
 		}
@@ -33,7 +33,6 @@ export class Bip39 {
 	}
 	
 	static generateMnemonicWords() {
-		
 		//Gen randrom 128 bit number
 		var entropy = CryptoUtil.getRandomNumber128()
 		var mnemonic = Bip39.generateMnemonicWordsFromEntropy(entropy)	
@@ -41,7 +40,11 @@ export class Bip39 {
 	}	
 	
 	static generateMnemonicWordsFromEntropy(entropy) {
-				
+		if(entropy.length < 32 || entropy.length > 64 || entropy.length % 4 !== 0) {
+			console.log("ERROR:  Entropy must be between 128 and 256 bit and divisible by 4")
+			return	
+		}
+		
 		var checksumLengthInBits = entropy.length * 4 / 32
 		
 		var bits =  sjcl.codec.hex.toBits(entropy)
@@ -63,15 +66,17 @@ export class Bip39 {
 	
 	
 	
-	static createSeed(mnemonic, passphrase = "") {
-		
+	static createSeed(mnemonic = "", passphrase = "") {
 		
 		var salt = "mnemonic" + passphrase
 		
 		//format the string
 		mnemonic = mnemonic.trim() 
-		mnemonic = mnemonic.split(/\s+/).join(" ");
+		mnemonic = mnemonic.split(/\s+/).join(" ")
 		
+		//mnemonic = mnemonic.normalize('NFKD')
+		mnemonic = unorm.nfkd(mnemonic)
+		salt = unorm.nfkd(salt)
 		
 		//A bit of a cheat, had some issues with SJCL in this case, the code did not generate the correct
 		//hash so I had to use crypto
@@ -79,4 +84,5 @@ export class Bip39 {
 		return seed.toString('hex')
 		
 	}
+	
 }

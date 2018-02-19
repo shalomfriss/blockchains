@@ -156,7 +156,10 @@ test('Check all test vectors', () => {
 	{
 		var vector = testVectors[i]
 		var mnemonic = Bip39.generateMnemonicWordsFromEntropy(vector[0])
+		var seed = Bip39.createSeed(mnemonic, "TREZOR")
+		
 		expect(mnemonic).toEqual(vector[1])
+		expect(seed).toEqual(vector[2])
 	}	
 })
 
