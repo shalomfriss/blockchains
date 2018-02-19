@@ -60,7 +60,6 @@ export class Bip32 {
 		var publicKeyString = "0488b21e" + "00" + "00000000" + "00000000" + masterChainCode + compressedPublicKey
 		var publicChecksum = CryptoUtil.getChecksum32(publicKeyString)
 		publicKeyString = publicKeyString + publicChecksum
-		console.log("STR: " + publicKeyString)
 		bytes = Buffer.from(publicKeyString, 'hex')
 		var encodedPublicKey = bs58.encode(bytes)
 		

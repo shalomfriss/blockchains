@@ -1,4 +1,5 @@
 import { Bip39 } from './Bip39';
+import { Bip32 } from './Bip32';
 import crypto from 'crypto';
 import {sjcl} from './../crypto/LocalExports';
 import 'sjcl/core/bn'; 
@@ -157,9 +158,12 @@ test('Check all test vectors', () => {
 		var vector = testVectors[i]
 		var mnemonic = Bip39.generateMnemonicWordsFromEntropy(vector[0])
 		var seed = Bip39.createSeed(mnemonic, "TREZOR")
+		var keys = Bip32.createMasterKeys(seed)
+		var masterPrivateKey = keys.m 
 		
 		expect(mnemonic).toEqual(vector[1])
 		expect(seed).toEqual(vector[2])
+		expect(masterPrivateKey).toEqual(vector[3])
 	}	
 })
 

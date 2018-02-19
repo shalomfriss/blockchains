@@ -33,9 +33,9 @@ export class Base58 {
         var bytes = [];
         for(var i = 0; i < input.length; i++){
 		    bytes.push(input.charCodeAt(i))
-		    console.log(input.charCodeAt(i))
+		    //console.log(input.charCodeAt(i))
 		}
-		console.log(bytes)
+		//console.log(bytes)
 		
 		input = Number(input)
 		
