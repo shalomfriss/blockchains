@@ -151,16 +151,23 @@ export class Bip32 {
 		}
 		*/
 		
-				
+		
 		//Create public key along with identifier and fingerprint
-		var compressedPublicKey = KeyGenerator.generateCompressedBitcoinPublicKey(privateKey)
-		var fingerprint = Bip32.getFingerprint(privateKey)
+		
+		console.log("COMPARE::::::::::::::::::::::::::::::::::")
+		console.log(privateKey)
+		console.log(newKeyHex)
+		
+		
+		var compressedPublicKey = KeyGenerator.generateCompressedBitcoinPublicKey(newKeyHex)
+		var parentFingerprint = Bip32.getFingerprint(privateKey)
 		
 		var depth = "01"
-		var privateKey = Bip32.serializeKey(Bip32.MAINNET_PRIVATE, depth, fingerprint, childIndex, chainCode, newKeyHex)
+		var privateKey = Bip32.serializeKey(Bip32.MAINNET_PRIVATE, depth, parentFingerprint, childIndex, chainCode, newKeyHex)
 		//var privateKey = Bip32.serializeKey(Bip32.MAINNET_PRIVATE, "00", "00000000", "00000000", chainCode, newKeyHex)
 		
-		var publicKey = Bip32.serializeKey(Bip32.MAINNET_PUBLIC, depth, fingerprint, childIndex, chainCode, compressedPublicKey)
+		console.log("PUB KEY 1: " + compressedPublicKey)
+		var publicKey = Bip32.serializeKey(Bip32.MAINNET_PUBLIC, depth, parentFingerprint, childIndex, chainCode, compressedPublicKey)
 		console.log("PUB KEY: " + publicKey)
 		
 		//return privateKey
@@ -239,7 +246,9 @@ export class Bip32 {
 		
 		if(network === Bip32.MAINNET_PRIVATE || network === Bip32.TESTNET_PRIVATE) {
 			key = "00" + key	
+			
 		}
+		
 		
 		var keyString = network + depth + parentFingerprint + childNumber + chainCode + key
 		var checksum = CryptoUtil.getChecksum32(keyString)
