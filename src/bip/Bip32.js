@@ -61,7 +61,6 @@ export class Bip32 {
 		var privateKey = Bip32.serializeKey(Bip32.MAINNET_PRIVATE, "00", "00000000", "00000000", masterChainCode, masterPrivateKey)
 		var publicKey = Bip32.serializeKey(Bip32.MAINNET_PUBLIC, "00", "00000000", "00000000", masterChainCode, compressedPublicKey)
 		
-		
 		var masterPrivateKey = new Bip32Key()
 		masterPrivateKey.network 		= Bip32.MAINNET_PRIVATE
 		masterPrivateKey.depth 			= "00"
@@ -80,21 +79,7 @@ export class Bip32 {
 		masterPublicKey.key 			= compressedPublicKey
 		masterPublicKey.isPrivate		= false
 		
-		
-		
 		return {m: privateKey, M: publicKey, c:masterChainCode}
-		
-		
-		
-		/*
-		//Calculate the master public key  
-		var theNumber = new sjcl.bn("0x" + masterPrivateKey) 
-		var K = sjcl.ecc.curves.k256.G.mult(theNumber)
-		var xhex = sjcl.codec.hex.fromBits(K.x.toBits())
-		var yhex = sjcl.codec.hex.fromBits(K.y.toBits())
-		var masterPublicKey = {x:xhex, y:yhex} 
-		*/
-		
 		
 	}
 	
@@ -109,15 +94,13 @@ export class Bip32 {
 	*/
 	static privateChildFromPrivateParent(parentPrivateKey, parentChaincode, childIndex) {
 		
-		//2147483648 = 80000000
+		//Convert childIndex to hex and pad
 		var childIndexHex = childIndex.toString(16)
 		if(childIndexHex.length < 8) {
 			while(childIndexHex.length < 8) {
 				childIndexHex = "0" + childIndexHex
 			}
 		}
-		
-		console.log("CH: " + childIndexHex)
 		
 		//Check for hardened key 0x80000000 = 2147483648
 		var hardened = false
@@ -160,6 +143,16 @@ export class Bip32 {
 		var newKeyBits = total.toBits()
 		var newKeyHex = sjcl.codec.hex.fromBits(newKeyBits)
 		
+		//In case parse256(IL) ≥ n or ki = 0, the resulting key is invalid
+		var newKeyBN = new sjcl.bn("0x" + newKeyHex)
+		var nBN = new sjcl.bn("0x" + Bip32.SECP256K1_ORDER)
+		var zeroBN = new sjcl.bn("0x0")
+		if(ILBN.greaterEquals(nBN) || newKeyBN.equals(zeroBN))
+		{
+			console.log("ERROR: Invalid key generated, continued with the next child index of " + (childIndex + 1))
+			return Bip32.privateChildFromPrivateParent(parentPrivateKey, parentChaincode, childIndex + 1)	
+		}
+		
 		//Create the parent fingerprint
 		var compressedPublicKey = KeyGenerator.generateCompressedBitcoinPublicKey(newKeyHex)
 		var parentFingerprint = Bip32.getFingerprint(privateKey)
@@ -184,11 +177,18 @@ export class Bip32 {
 		@param parentChainCode - The parent chain code
 		@param childIndex - The child index.  If a number less than 2^31 is given, 2^31 will be added to the number	
 	*/
-	static derivePublicChildkey(parentPublicKey) {
+	static publicChildFromPublicParent(parentPublicKey, parentChaincode, childIndex) {
+		//Check for hardened key 0x80000000 = 2147483648
+		var hardened = false
+		if(childIndex >= 2147483648) {hardened = true}
 		
+		if(hardened == true) {
+			console.log("ERROR: Cannot derive from hardened key")
+			return
+		}
 	}
 	
-	static derivePublicChildKeyFromPrivate() {
+	static publicChildFromPrivateParent() {
 		
 	}
 	
