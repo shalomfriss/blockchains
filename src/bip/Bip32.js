@@ -105,61 +105,42 @@ export class Bip32 {
 		Derive a Bip32 private child key from a private parent key
 		@param parentPrivateKey - The parent private key (xprv...)
 		@param parentChainCode - The parent chain code
-		@param childIndex - The child index in hex.  If the number of digits is less than 8, it will be zero padded Ex: c9 -> 000000c9
-							if the child index is greater or equal to 2^31 (80000000) it is a hardened key, otherwise it is a normal key
+		@param childIndex - The child index as an integer
 	*/
 	static privateChildFromPrivateParent(parentPrivateKey, parentChaincode, childIndex) {
 		
-		console.log("DERIVE ************************************************************************************************")
-		
-		if(childIndex.length < 8) {
-			while(childIndex.length < 8) {
-				childIndex = "0" + childIndex
+		//2147483648 = 80000000
+		var childIndexHex = childIndex.toString(16)
+		if(childIndexHex.length < 8) {
+			while(childIndexHex.length < 8) {
+				childIndexHex = "0" + childIndexHex
 			}
 		}
 		
-		console.log("CHILD INDEX: " + childIndex)
+		console.log("CH: " + childIndexHex)
 		
-		//Check for hardened key
-		var indexNumber = new sjcl.bn("0x" + childIndex)
-		var limit = new sjcl.bn("0x" + Bip32.HIGH_BIT)
+		//Check for hardened key 0x80000000 = 2147483648
 		var hardened = false
-		if(indexNumber.greaterEquals(limit)) {
-			console.log("CREATING HARDENED")
-			hardened = true
-		}
-		else {
-			console.log("CREATING NORMAL KEYS")
-		}
+		if(childIndex >= 2147483648) {hardened = true}
 		
+		//Check for private key
 		var key = Bip32.unserializeKey(parentPrivateKey)
 		if(key.isPrivate == false) {
 			console.log("***ERROR: MUST HAVE PRIVATE KEY")
-			return
+			return 
 		}
-		
-		//47fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae6236141
-		//873dff81c02f525623fd1fe5167eac3a55a049de3d314bb42ee227ffed37d508
-		
-		//035A784662A4A20A65BF6AAB9AE98A6C068A81C52E4B032C0FB5400C706CFCCC561
-		//00e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b3580000000
-		//035A784662A4A20A65BF6AAB9AE98A6C068A81C52E4B032C0FB5400C706CFCCC561
 		
 		//Private key minus the checksum
 		var privateKey = key.key.substr(0, 64)
-		console.log("KEY: " + key.key)
-		console.log("KEY: " + privateKey)
-		
 		var keyStr = ""
 		if(hardened == true) {
-			keyStr = "00" + privateKey + childIndex
+			keyStr = "00" + privateKey + childIndexHex
 		}
 		else {
-			keyStr = KeyGenerator.generateCompressedBitcoinPublicKey(privateKey) + childIndex
+			keyStr = KeyGenerator.generateCompressedBitcoinPublicKey(privateKey) + childIndexHex
 		}
 		
 		//Create the hmac digest
-		//console.log("Parent chaincode: " + parentChaincode)
 		var hmac = crypto.createHmac('SHA512',new Buffer(parentChaincode, 'hex') )
 		hmac.update(keyStr, "hex")
 		var digest = hmac.digest('hex')
@@ -167,52 +148,30 @@ export class Bip32 {
 		//Take the left and right sides
 		var IL = digest.substr(0, 64) 
 		var chainCode = digest.substr(64, digest.length) 
-		//console.log("IL.      : " + IL)
-		//console.log("chainCode: " + chainCode)
 		
-		
-		//The returned child key ki is parse256(IL) + kpar (mod n).
+		//Create a new private key hex
+		//The returned child key ki is parse256(IL) + kpar (mod n) in hex
+		var orderNBN = new sjcl.bn("0x" + Bip32.SECP256K1_ORDER)
 		var ILBN = new sjcl.bn("0x" + IL)
 		var privateKeyBN = new sjcl.bn("0x" + privateKey)
-		
-		
-		
-		var G = sjcl.ecc.curves.k256.G
-		var Gx = G.x.limbs
-		var Gy = G.y.limbs
-		
-		
-				
-		var ordern = Bip32.SECP256K1_ORDER
-		var orderNBN = new sjcl.bn("0x" + ordern)
 		var total = ILBN.add(privateKeyBN)
 		//mod is an undocumented feature of sjcl
 		total = total.mod(orderNBN)
-		
 		var newKeyBits = total.toBits()
 		var newKeyHex = sjcl.codec.hex.fromBits(newKeyBits)
 		
-		console.log("OUT!: " + newKeyHex)
-		
-		
-		
+		//Create the parent fingerprint
 		var compressedPublicKey = KeyGenerator.generateCompressedBitcoinPublicKey(newKeyHex)
 		var parentFingerprint = Bip32.getFingerprint(privateKey)
 		
-		
+		//calculate the new depth
 		var depth = parseInt(key.depth, 16)
 		depth += 1
 		depth = depth.toString(16)
 		depth = depth.length < 2 ? "0" + depth : depth
 		
-		console.log("DEPTH: " + depth)
-		var privateKey = Bip32.serializeKey(Bip32.MAINNET_PRIVATE, depth, parentFingerprint, childIndex, chainCode, newKeyHex)
-		//var privateKey = Bip32.serializeKey(Bip32.MAINNET_PRIVATE, "00", "00000000", "00000000", chainCode, newKeyHex)
-		
-		//console.log("PUB KEY 1: " + compressedPublicKey)
-		var publicKey = Bip32.serializeKey(Bip32.MAINNET_PUBLIC, depth, parentFingerprint, childIndex, chainCode, compressedPublicKey)
-		//console.log("PUB KEY: " + publicKey)
-		//return privateKey
+		var privateKey = Bip32.serializeKey(Bip32.MAINNET_PRIVATE, depth, parentFingerprint, childIndexHex, chainCode, newKeyHex)
+		var publicKey = Bip32.serializeKey(Bip32.MAINNET_PUBLIC, depth, parentFingerprint, childIndexHex, chainCode, compressedPublicKey)
 		
 		return {m: privateKey, M: publicKey, c:chainCode}
 		
