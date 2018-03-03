@@ -29,16 +29,20 @@ test('Check BIP32 test vector 1', () => {
 	var keys = Bip32.createMasterKeys(seed)
 	expect(keys.m).toEqual(mprv)
 	expect(keys.M).toEqual(mpub)
+	console.log("MASTER KEYS ARE CORRECT")
 	
-	var derived = Bip32.derivePrivateChildKey(keys.m, keys.c, "80000000")
-	
-	console.log(derived)
-	console.log("EXPECT : " + m0Hprv)
-	
+	var derived = Bip32.privateChildFromPrivateParent(keys.m, keys.c, "80000000")
 	expect(derived.m).toEqual(m0Hprv)
 	expect(derived.M).toEqual(m0Hpub)
+	console.log("DERIVED 1 IS CORRECT")
+	
+	var derived1 = Bip32.privateChildFromPrivateParent(derived.m, derived.c, "1")
+	expect(derived1.m).toEqual(m0H1prv)
+	expect(derived1.M).toEqual(m0H1pub)
 	
 })
+
+
 
 test('Check BIP32 test vector 2', () => {
 	var seed = "fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542"
