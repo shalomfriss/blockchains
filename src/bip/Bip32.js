@@ -6,7 +6,6 @@ import 'sjcl/core/ripemd160';
 import crypto from 'crypto';
 import bs58 from 'bs58';
 import { CryptoUtil } from './../crypto/CryptoUtil';
-import { KeyGenerator } from './../crypto/KeyGenerator';
 import { Bip32Key } from './Bip32Key';
 
 export class Bip32 {
@@ -57,8 +56,8 @@ export class Bip32 {
 		}
 		
 		//Calc compressed pub key
-		var compressedPublicKey = KeyGenerator.generateCompressedBitcoinPublicKey(masterPrivateKey)
-		var rawPublicKey = KeyGenerator.generateRawPublicKey(masterPrivateKey)
+		var compressedPublicKey = Bip32.generateCompressedPublicKey(masterPrivateKey)
+		var rawPublicKey = Bip32.generateRawPublicKey(masterPrivateKey)
 		
 		//var privateKey = Bip32.serializeKey(Bip32.MAINNET_PRIVATE, "00", "00000000", "00000000", masterChainCode, masterPrivateKey)
 		//var publicKey = Bip32.serializeKey(Bip32.MAINNET_PUBLIC, "00", "00000000", "00000000", masterChainCode, compressedPublicKey)
@@ -121,7 +120,7 @@ export class Bip32 {
 			keyStr = "00" + privateKey + childIndexHex
 		}
 		else {
-			keyStr = KeyGenerator.generateCompressedBitcoinPublicKey(privateKey) + childIndexHex
+			keyStr = Bip32.generateCompressedPublicKey(privateKey) + childIndexHex
 		}
 		
 		//Create the hmac digest
@@ -245,7 +244,7 @@ export class Bip32 {
 		var KI = (ILG.toJac().add(P)).toAffine()
 		
 		
-		var compressedPublicKey = KeyGenerator.compressRawPublicKey(KI)
+		var compressedPublicKey = Bip32.compressRawPublicKey(KI)
 		var fingerprint = Bip32.getFingerprint(parentPublicKey.key)
 		
 		//In case parse256(IL) ≥ n or Ki is the point at infinity, the resulting key is invalid
@@ -281,6 +280,7 @@ export class Bip32 {
 		
 	}
 	
+	//THIS IS NOT POSSIBLE
 	static privateChildFromPublicParent() {
 		console.log("ERROR: Deriving private child key from public parent key is not possible")
 	}
@@ -295,8 +295,8 @@ export class Bip32 {
 		var pKey = privateKey.key.substr(0, 64)
 		
 		//Create the parent fingerprint
-		var compressedPublicKey = KeyGenerator.generateCompressedBitcoinPublicKey(pKey)
-		var rawPublicKey 		= KeyGenerator.generateRawPublicKey(pKey)
+		var compressedPublicKey = Bip32.generateCompressedPublicKey(pKey)
+		var rawPublicKey 		= Bip32.generateRawPublicKey(pKey)
 		
 		var bip32PublicKey = new Bip32Key()
 		bip32PublicKey.network 			= Bip32.MAINNET_PUBLIC
@@ -311,7 +311,64 @@ export class Bip32 {
 		return bip32PublicKey
 	}
 
+	/******************************************************************************************************************/
+	//UTILITIES
+	/******************************************************************************************************************/
 	
+	static generateRawPublicKey(privateKey) {
+		var theNumber = new sjcl.bn("0x" + privateKey)
+		var K = sjcl.ecc.curves.k256.G.mult(theNumber)
+		return K
+	}
+	
+	static generatePublicKey(privateKey) {
+				
+		var theNumber = new sjcl.bn("0x" + privateKey)
+		var K = sjcl.ecc.curves.k256.G.mult(theNumber)
+				
+		var xhex = sjcl.codec.hex.fromBits(K.x.toBits())
+		var yhex = sjcl.codec.hex.fromBits(K.y.toBits())
+				
+		return {x: xhex.toString(), y: yhex.toString()}
+	}
+	
+	/**
+		Generate a compressed  public key from a private key
+		@param privateKey - The private key in hex	
+	*/
+	static generateCompressedPublicKey(privateKey) {
+		var theNumber = new sjcl.bn("0x" + privateKey)
+		var K = sjcl.ecc.curves.k256.G.mult(theNumber)
+		
+		return Bip32.compressRawPublicKey(K)
+	}
+	
+	static compressRawPublicKey(K) {
+		
+		var xhex = sjcl.codec.hex.fromBits(K.x.toBits())
+		var yhex = sjcl.codec.hex.fromBits(K.y.toBits())
+		
+		var yCoord = new sjcl.bn("0x" + yhex)
+		
+		var ystr = yCoord.toString()
+		var lastChar = ystr.charAt(ystr.length - 1).toUpperCase()
+		
+		var prefix = ""
+		if(lastChar === "0" || lastChar === "2" || lastChar === "4" || lastChar === "6" || 
+		lastChar === "8" || lastChar === "A" || lastChar === "C" || lastChar === "E") 
+		{
+			prefix = "02"
+		}
+		else
+		{
+			prefix = "03"
+		}
+		
+		var pubKey = prefix + xhex.toString()
+		return pubKey
+	}
+
+
 
 	/**
 		Get the fingerprint of an extended key.  Extended keys can be identified by the Hash160 (RIPEMD160 after SHA256) of the serialized ECDSA public key K, ignoring the chain code
@@ -321,7 +378,7 @@ export class Bip32 {
 		var keystr = ""
 		if(key instanceof Bip32Key) {
 			if(key.isPrivate === true) {
-				keystr = KeyGenerator.generateCompressedBitcoinPublicKey(key.key)
+				keystr = Bip32.generateCompressedPublicKey(key.key)
 			}
 			else
 			{
@@ -332,7 +389,6 @@ export class Bip32 {
 			keystr = key
 		}
 		
-		//var compressedPublicKey = KeyGenerator.generateCompressedBitcoinPublicKey(privateKey)
 		
 		var bits = sjcl.codec.hex.toBits(keystr.toLowerCase())
 		var hash1 = sjcl.hash.sha256.hash(bits);
@@ -349,7 +405,7 @@ export class Bip32 {
 		var keystr = ""
 		if(key instanceof Bip32Key) {
 			if(key.isPrivate === true) {
-				keystr = KeyGenerator.generateCompressedBitcoinPublicKey(key.key)
+				keystr = Bip32.generateCompressedPublicKey(key.key)
 			}
 			else
 			{

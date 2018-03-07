@@ -236,6 +236,7 @@ export class KeyGenerator {
 	/**
 		NOT WORKING	
 	*/
+	/*
 	static decompressPublicKey(key) {
 		console.log(key)
 		
@@ -269,5 +270,5 @@ export class KeyGenerator {
 		
 		console.log(temp.toString())		
 	}
-	
+	*/
 }

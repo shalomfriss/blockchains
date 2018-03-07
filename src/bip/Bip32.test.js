@@ -135,7 +135,6 @@ test('Check BIP32 test vector 3', () => {
 	var keysm = Bip32.createMasterKeys(seed)
 	expect(Bip32.serializeKey(keysm.m)).toEqual(mprv)
 	expect(Bip32.serializeKey(keysm.M)).toEqual(mpub)
-	console.log(keysm)
 	
 	var keysm0H = Bip32.privateChildFromPrivateParent(keysm.m, 2147483648)
 	var pubkeym0H = Bip32.publicChildFromPublicParent(keysm.M, 2147483648) //Should not be able to derive hardened key
