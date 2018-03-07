@@ -29,20 +29,17 @@ test('Check BIP32 test vector 1', () => {
 	expect(Bip32.serializeKey(keysm.m)).toEqual(mprv)
 	expect(Bip32.serializeKey(keysm.M)).toEqual(mpub)
 	
-	
 	var keysm0H = Bip32.privateChildFromPrivateParent(keysm.m, 2147483648 + 0)
 	var pubkey0H = Bip32.publicChildFromPublicParent(keysm.M, 2147483648 + 0)		//Should not be able to derive hardened key
 	expect(Bip32.serializeKey(keysm0H.m)).toEqual(m0Hprv)
 	expect(Bip32.serializeKey(keysm0H.M)).toEqual(m0Hpub)
 	expect(pubkey0H).toEqual(undefined)
 	
-	
 	var keysm0H1 = Bip32.privateChildFromPrivateParent(keysm0H.m, 1)
 	var pubkey0H1 = Bip32.publicChildFromPublicParent(keysm0H.M, 1)
 	expect(Bip32.serializeKey(keysm0H1.m)).toEqual(m0H1prv)
 	expect(Bip32.serializeKey(keysm0H1.M)).toEqual(m0H1pub)
 	expect(Bip32.serializeKey(pubkey0H1)).toEqual(m0H1pub)
-	
 	
 	var keysm0H12H = Bip32.privateChildFromPrivateParent(keysm0H1.m, 2147483648 + 2)
 	var pubkey0H12H = Bip32.publicChildFromPublicParent(keysm0H1.M, 2147483648 + 2)	//Should not be able to derive hardened key
@@ -87,30 +84,41 @@ test('Check BIP32 test vector 2', () => {
 	var m02147483647H12147483646H2prv = "xprvA2nrNbFZABcdryreWet9Ea4LvTJcGsqrMzxHx98MMrotbir7yrKCEXw7nadnHM8Dq38EGfSh6dqA9QWTyefMLEcBYJUuekgW4BYPJcr9E7j"
 	var m02147483647H12147483646H2pub = "xpub6FnCn6nSzZAw5Tw7cgR9bi15UV96gLZhjDstkXXxvCLsUXBGXPdSnLFbdpq8p9HmGsApME5hQTZ3emM2rnY5agb9rXpVGyy3bdW6EEgAtqt"
 	
+	//var pubkey0H = Bip32.publicChildFromPublicParent(keysm.M, 2147483648 + 0)		
 	
 	var keysm = Bip32.createMasterKeys(seed)
 	expect(Bip32.serializeKey(keysm.m)).toEqual(mprv)
 	expect(Bip32.serializeKey(keysm.M)).toEqual(mpub)
 	
 	var keysm0 = Bip32.privateChildFromPrivateParent(keysm.m, 0)
+	var pubkeym0 = Bip32.publicChildFromPublicParent(keysm.M, 0)
 	expect(Bip32.serializeKey(keysm0.m)).toEqual(m0prv)
 	expect(Bip32.serializeKey(keysm0.M)).toEqual(m0pub)
+	expect(Bip32.serializeKey(pubkeym0)).toEqual(m0pub)
 	
 	var keysm02147483647H = Bip32.privateChildFromPrivateParent(keysm0.m, 2147483648 + 2147483647)
+	var pubkeym02147483647H = Bip32.publicChildFromPublicParent(keysm0.M, 2147483648 + 2147483647) //Should not be able to derive hardened key
 	expect(Bip32.serializeKey(keysm02147483647H.m)).toEqual(m02147483647Hprv)
 	expect(Bip32.serializeKey(keysm02147483647H.M)).toEqual(m02147483647Hpub)
+	expect(pubkeym02147483647H).toEqual(undefined)
 	
 	var keysm02147483647H1 = Bip32.privateChildFromPrivateParent(keysm02147483647H.m, 1)
+	var pubkeym02147483647H1 = Bip32.publicChildFromPublicParent(keysm02147483647H.M, 1)
 	expect(Bip32.serializeKey(keysm02147483647H1.m)).toEqual(m02147483647H1prv)
 	expect(Bip32.serializeKey(keysm02147483647H1.M)).toEqual(m02147483647H1pub)
+	expect(Bip32.serializeKey(pubkeym02147483647H1)).toEqual(m02147483647H1pub)
 	
 	var m02147483647H12147483646H = Bip32.privateChildFromPrivateParent(keysm02147483647H1.m, 2147483648 + 2147483646)
+	var pubkeym02147483647H12147483646H = Bip32.publicChildFromPublicParent(keysm02147483647H1.M, 2147483648 + 2147483646) //Should not be able to derive hardened key
 	expect(Bip32.serializeKey(m02147483647H12147483646H.m)).toEqual(m02147483647H12147483646Hprv)
 	expect(Bip32.serializeKey(m02147483647H12147483646H.M)).toEqual(m02147483647H12147483646Hpub)
+	expect(pubkeym02147483647H12147483646H).toEqual(undefined)
 	
 	var m02147483647H12147483646H2 = Bip32.privateChildFromPrivateParent(m02147483647H12147483646H.m, 2)
+	var pubkeym02147483647H12147483646H2 = Bip32.publicChildFromPublicParent(m02147483647H12147483646H.M, 2)
 	expect(Bip32.serializeKey(m02147483647H12147483646H2.m)).toEqual(m02147483647H12147483646H2prv)
 	expect(Bip32.serializeKey(m02147483647H12147483646H2.M)).toEqual(m02147483647H12147483646H2pub)
+	expect(Bip32.serializeKey(pubkeym02147483647H12147483646H2)).toEqual(m02147483647H12147483646H2pub)
 	
 })
 
@@ -127,9 +135,12 @@ test('Check BIP32 test vector 3', () => {
 	var keysm = Bip32.createMasterKeys(seed)
 	expect(Bip32.serializeKey(keysm.m)).toEqual(mprv)
 	expect(Bip32.serializeKey(keysm.M)).toEqual(mpub)
+	console.log(keysm)
 	
 	var keysm0H = Bip32.privateChildFromPrivateParent(keysm.m, 2147483648)
+	var pubkeym0H = Bip32.publicChildFromPublicParent(keysm.M, 2147483648) //Should not be able to derive hardened key
 	expect(Bip32.serializeKey(keysm0H.m)).toEqual(m0Hprv)
 	expect(Bip32.serializeKey(keysm0H.M)).toEqual(m0Hpub)
+	expect(pubkeym0H).toEqual(undefined)
 	
 })
