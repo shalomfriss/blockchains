@@ -176,9 +176,10 @@ export class Bip32 {
 		bip32PrivateKey.key 			= newKeyHex
 		bip32PrivateKey.isPrivate		= true
 		
-		var bip32PublicKey = Bip32.publicKeyFromPrivateKey(bip32PrivateKey)
-				
-		return {m: bip32PrivateKey, M: bip32PublicKey}
+		return bip32PrivateKey
+		
+		//var bip32PublicKey = Bip32.publicKeyFromPrivateKey(bip32PrivateKey)		
+		//return {m: bip32PrivateKey, M: bip32PublicKey}
 		
 	}
 	
@@ -276,7 +277,20 @@ export class Bip32 {
 		return bip32PublicKey
 	}
 	
-	static publicChildFromPrivateParent() {
+	static publicChildFromPrivateParent(parentPrivateKey, childIndex) {
+		//Check for hardened key 0x80000000 = 2147483648
+		var hardened = false
+		if(childIndex >= 2147483648) {hardened = true}
+		
+		if(hardened === true) {
+			var childPrivateKey = Bip32.privateChildFromPrivateParent(parentPrivateKey, childIndex)
+			var childPublicKey = Bip32.publicKeyFromPrivateKey(childPrivateKey)
+			return childPublicKey
+		}
+		else {
+			var parentPublicKey = Bip32.publicKeyFromPrivateKey(parentPrivateKey)
+			return Bip32.publicChildFromPublicParent(parentPublicKey, childIndex)
+		}
 		
 	}
 	
