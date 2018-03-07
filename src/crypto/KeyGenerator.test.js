@@ -40,7 +40,7 @@ test('check the wif checksum', () => {
 })
 
 test("check private key from wif", () => {
-	var pkey = "1e99423a4ed27608a15a2616a2b0e9e52ced330ac530edcc32c8ffc6a526aedd".toUpperCase()
+	var pkey = "1e99423a4ed27608a15a2616a2b0e9e52ced330ac530edcc32c8ffc6a526aedd"
 	var wif = KeyGenerator.wifFromPrivateKey(pkey, false)
 	
 	var keyFromWif = KeyGenerator.privateKeyFromWIF(wif)
@@ -48,7 +48,7 @@ test("check private key from wif", () => {
 })
 
 test("check private key from  compressed wif", () => {
-	var pkey = "1e99423a4ed27608a15a2616a2b0e9e52ced330ac530edcc32c8ffc6a526aedd".toUpperCase()
+	var pkey = "1e99423a4ed27608a15a2616a2b0e9e52ced330ac530edcc32c8ffc6a526aedd"
 	var wif = KeyGenerator.wifCompressedFromPrivateKey(pkey, false)
 	
 	var keyFromWif = KeyGenerator.privateKeyFromWIF(wif)
@@ -59,15 +59,15 @@ test("Generate a public key from a private key", () => {
 	var pkey = "1184CD2CDD640CA42CFC3A091C51D549B2F016D454B2774019C2B2D2E08529FD"
 	var pubKey = KeyGenerator.generatePublicKey(pkey)
 	
-	expect(pubKey.x).toEqual("D0988BFA799F7D7EF9AB3DE97EF481CD0F75D2367AD456607647EDDE665D6F6F".toUpperCase())
-	expect(pubKey.y).toEqual("BDD594388756A7BEAF73B4822BC22D36E9BDA7DB82DF2B8B623673EEFC0B7495".toUpperCase())
+	expect(pubKey.x).toEqual("D0988BFA799F7D7EF9AB3DE97EF481CD0F75D2367AD456607647EDDE665D6F6F".toLowerCase())
+	expect(pubKey.y).toEqual("BDD594388756A7BEAF73B4822BC22D36E9BDA7DB82DF2B8B623673EEFC0B7495".toLowerCase())
 })
 
 
 test("Generate a public key from a private key for bitcoin", () => {
 	var pkey = "3aba4162c7251c891207b747840551a71939b0de081f85c4e44cf7c13e41daa6"
 	var pubKey = KeyGenerator.generateBitcoinPublicKey(pkey)
-				expect(pubKey).toEqual("045c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec243bcefdd4347074d44bd7356d6a53c495737dd96295e2a9374bf5f02ebfc176".toUpperCase())
+				expect(pubKey).toEqual("045c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec243bcefdd4347074d44bd7356d6a53c495737dd96295e2a9374bf5f02ebfc176".toLowerCase())
 		
 })
 
@@ -75,7 +75,7 @@ test("Generate a public key from a private key for bitcoin", () => {
 test("Generate a compressed public key from a private key for bitcoin", () => {
 	var pkey = "3aba4162c7251c891207b747840551a71939b0de081f85c4e44cf7c13e41daa6"
 	var pubKey = KeyGenerator.generateCompressedBitcoinPublicKey(pkey)
-	expect(pubKey).toEqual("025c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec".toUpperCase())
+	expect(pubKey).toEqual("025c0de3b9c8ab18dd04e3511243ec2952002dbfadc864b9628910169d9b9b00ec".toLowerCase())
 		
 })
 

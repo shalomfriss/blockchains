@@ -8,6 +8,7 @@ export class Bip32Key {
 		this.index 				= ""
 		this.parentFingerprint 	= ""
 		this.key 				= ""
+		this.rawKey				= "" 	//Used for raw public key data
 		this.chainCode 			= ""
 		this.isPrivate 			= ""
 	} 

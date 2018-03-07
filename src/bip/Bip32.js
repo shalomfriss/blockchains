@@ -58,28 +58,31 @@ export class Bip32 {
 		
 		//Calc compressed pub key
 		var compressedPublicKey = KeyGenerator.generateCompressedBitcoinPublicKey(masterPrivateKey)
-		var privateKey = Bip32.serializeKey(Bip32.MAINNET_PRIVATE, "00", "00000000", "00000000", masterChainCode, masterPrivateKey)
-		var publicKey = Bip32.serializeKey(Bip32.MAINNET_PUBLIC, "00", "00000000", "00000000", masterChainCode, compressedPublicKey)
+		var rawPublicKey = KeyGenerator.generateRawPublicKey(masterPrivateKey)
 		
-		var masterPrivateKey = new Bip32Key()
-		masterPrivateKey.network 		= Bip32.MAINNET_PRIVATE
-		masterPrivateKey.depth 			= "00"
-		masterPrivateKey.fingerprint 	= "00000000"
-		masterPrivateKey.index 			= "00000000"
-		masterPrivateKey.chainCode 		= masterChainCode
-		masterPrivateKey.key 			= masterPrivateKey
-		masterPrivateKey.isPrivate		= true
+		//var privateKey = Bip32.serializeKey(Bip32.MAINNET_PRIVATE, "00", "00000000", "00000000", masterChainCode, masterPrivateKey)
+		//var publicKey = Bip32.serializeKey(Bip32.MAINNET_PUBLIC, "00", "00000000", "00000000", masterChainCode, compressedPublicKey)
 		
-		var masterPublicKey = new Bip32Key()
-		masterPublicKey.network 		= Bip32.MAINNET_PUBLIC
-		masterPublicKey.depth 			= "00"
-		masterPublicKey.fingerprint 	= "00000000"
-		masterPublicKey.index 			= "00000000"
-		masterPublicKey.chainCode 		= masterChainCode
-		masterPublicKey.key 			= compressedPublicKey
-		masterPublicKey.isPrivate		= false
+		var bip32PrivateKey = new Bip32Key()
+		bip32PrivateKey.network 		= Bip32.MAINNET_PRIVATE
+		bip32PrivateKey.depth 			= "00"
+		bip32PrivateKey.fingerprint 	= "00000000"
+		bip32PrivateKey.index 			= "00000000"
+		bip32PrivateKey.chainCode 		= masterChainCode
+		bip32PrivateKey.key 			= masterPrivateKey
+		bip32PrivateKey.isPrivate		= true
 		
-		return {m: privateKey, M: publicKey, c:masterChainCode}
+		var bip32PublicKey = new Bip32Key()
+		bip32PublicKey.network 			= Bip32.MAINNET_PUBLIC
+		bip32PublicKey.depth 			= "00"
+		bip32PublicKey.fingerprint 		= "00000000"
+		bip32PublicKey.index 			= "00000000"
+		bip32PublicKey.chainCode 		= masterChainCode
+		bip32PublicKey.key 				= compressedPublicKey
+		bip32PublicKey.rawKey			= rawPublicKey
+		bip32PublicKey.isPrivate		= false
+		
+		return {m: bip32PrivateKey, M: bip32PublicKey}
 		
 	}
 	
@@ -88,11 +91,10 @@ export class Bip32 {
 	
 	/**
 		Derive a Bip32 private child key from a private parent key
-		@param parentPrivateKey - The parent private key (xprv...)
-		@param parentChainCode - The parent chain code
-		@param childIndex - The child index as an integer
+		@param parentPrivateKey:Bip32Key - The parent private Bip32Key
+		@param childIndex:Integer - The child index as an integer
 	*/
-	static privateChildFromPrivateParent(parentPrivateKey, parentChaincode, childIndex) {
+	static privateChildFromPrivateParent(parentPrivateKey, childIndex) {
 		
 		//Convert childIndex to hex and pad
 		var childIndexHex = childIndex.toString(16)
@@ -107,14 +109,13 @@ export class Bip32 {
 		if(childIndex >= 2147483648) {hardened = true}
 		
 		//Check for private key
-		var key = Bip32.unserializeKey(parentPrivateKey)
-		if(key.isPrivate == false) {
+		if(parentPrivateKey.isPrivate == false) {
 			console.log("***ERROR: MUST HAVE PRIVATE KEY")
 			return 
 		}
 		
 		//Private key minus the checksum
-		var privateKey = key.key.substr(0, 64)
+		var privateKey = parentPrivateKey.key.substr(0, 64)
 		var keyStr = ""
 		if(hardened == true) {
 			keyStr = "00" + privateKey + childIndexHex
@@ -124,7 +125,7 @@ export class Bip32 {
 		}
 		
 		//Create the hmac digest
-		var hmac = crypto.createHmac('SHA512',new Buffer(parentChaincode, 'hex') )
+		var hmac = crypto.createHmac('SHA512',new Buffer(parentPrivateKey.chainCode, 'hex') )
 		hmac.update(keyStr, "hex")
 		var digest = hmac.digest('hex')
 		
@@ -150,25 +151,38 @@ export class Bip32 {
 		if(ILBN.greaterEquals(nBN) || newKeyBN.equals(zeroBN))
 		{
 			console.log("ERROR: Invalid key generated, continued with the next child index of " + (childIndex + 1))
-			return Bip32.privateChildFromPrivateParent(parentPrivateKey, parentChaincode, childIndex + 1)	
+			return Bip32.privateChildFromPrivateParent(parentPrivateKey, childIndex + 1)	
 		}
 		
 		//Create the parent fingerprint
-		var compressedPublicKey = KeyGenerator.generateCompressedBitcoinPublicKey(newKeyHex)
-		var parentFingerprint = Bip32.getFingerprint(privateKey)
+		var parentFingerprint = Bip32.getFingerprint(parentPrivateKey)
 		
 		//calculate the new depth
-		var depth = parseInt(key.depth, 16)
+		var depth = parseInt(parentPrivateKey.depth, 16)
 		depth += 1
 		depth = depth.toString(16)
 		depth = depth.length < 2 ? "0" + depth : depth
 		
-		var privateKey = Bip32.serializeKey(Bip32.MAINNET_PRIVATE, depth, parentFingerprint, childIndexHex, chainCode, newKeyHex)
-		var publicKey = Bip32.serializeKey(Bip32.MAINNET_PUBLIC, depth, parentFingerprint, childIndexHex, chainCode, compressedPublicKey)
+		//var privateKey = Bip32.serializeKey(Bip32.MAINNET_PRIVATE, depth, parentFingerprint, childIndexHex, chainCode, newKeyHex)
+		//var publicKey = Bip32.serializeKey(Bip32.MAINNET_PUBLIC, depth, parentFingerprint, childIndexHex, chainCode, compressedPublicKey)
+		//return {m: privateKey, M: publicKey, c:chainCode, rawPublicKey: rawPublicKey}
 		
-		return {m: privateKey, M: publicKey, c:chainCode}
+		
+		var bip32PrivateKey = new Bip32Key()
+		bip32PrivateKey.network 		= Bip32.MAINNET_PRIVATE
+		bip32PrivateKey.depth 			= depth
+		bip32PrivateKey.fingerprint 	= parentFingerprint
+		bip32PrivateKey.index 			= childIndexHex
+		bip32PrivateKey.chainCode 		= chainCode
+		bip32PrivateKey.key 			= newKeyHex
+		bip32PrivateKey.isPrivate		= true
+		
+		var bip32PublicKey = Bip32.publicKeyFromPrivateKey(bip32PrivateKey)
+				
+		return {m: bip32PrivateKey, M: bip32PublicKey}
 		
 	}
+	
 	
 	
 	/**
@@ -177,29 +191,150 @@ export class Bip32 {
 		@param parentChainCode - The parent chain code
 		@param childIndex - The child index.  If a number less than 2^31 is given, 2^31 will be added to the number	
 	*/
-	static publicChildFromPublicParent(parentPublicKey, parentChaincode, childIndex) {
+	static publicChildFromPublicParent(parentPublicKey, childIndex) {
+		
 		//Check for hardened key 0x80000000 = 2147483648
 		var hardened = false
 		if(childIndex >= 2147483648) {hardened = true}
-		
 		if(hardened == true) {
-			console.log("ERROR: Cannot derive from hardened key")
+			console.log("ERROR: Cannot derive hardened child")
 			return
+		}		
+		
+		//Check for public key
+		if(parentPublicKey.isPrivate == true) {
+			console.log("***ERROR: MUST HAVE PUBLIC KEY")
+			return 
 		}
+		
+		
+		//Convert childIndex to hex and pad
+		var childIndexHex = childIndex.toString(16)
+		if(childIndexHex.length < 8) {
+			while(childIndexHex.length < 8) {
+				childIndexHex = "0" + childIndexHex
+			}
+		}
+		
+		var keyStr = parentPublicKey.key + childIndexHex
+		
+		//Create the hmac digest
+		var hmac = crypto.createHmac('SHA512',new Buffer(parentPublicKey.chainCode, 'hex') )
+		hmac.update(keyStr, "hex")
+		var digest = hmac.digest('hex')
+		
+		
+		//Take the left and right sides
+		var IL = digest.substr(0, 64) 
+		var chainCode = digest.substr(64, digest.length) 
+		
+		
+		// Ki = (IL + kpar)*G = IL*G + Kpar
+		var ILBN = new sjcl.bn("0x" + IL)
+		var ILG = sjcl.ecc.curves.k256.G.mult(ILBN)	//Affine coordinate
+		
+		//Create a point on the ecc curve to add 
+		var P = new sjcl.ecc.point( // (curve, x, y)
+			sjcl.ecc.curves.k256,
+			new sjcl.bn.prime.p256k(parentPublicKey.rawKey.x.toString()),
+			new sjcl.bn.prime.p256k(parentPublicKey.rawKey.y.toString())
+		)
+		
+		//The public key
+		//ILG has to be jacobian, P has to be affine, the result is Jacobian
+		var KI = (ILG.toJac().add(P)).toAffine()
+		
+		
+		var compressedPublicKey = KeyGenerator.compressRawPublicKey(KI)
+		var fingerprint = Bip32.getFingerprint(parentPublicKey.key)
+		
+		//In case parse256(IL) ≥ n or Ki is the point at infinity, the resulting key is invalid
+		//*TODO: In case Ki is the point at infinity, the resulting key is invalid, and one should proceed with the next value for i.
+		var nBN = new sjcl.bn("0x" + Bip32.SECP256K1_ORDER)
+		if(ILBN.greaterEquals(nBN))
+		{
+			console.log("ERROR: Invalid key generated, continued with the next child index of " + (childIndex + 1))
+			return Bip32.publicChildFromPublicParent(parentPublicKey, childIndex + 1)	
+		}
+		
+		
+		//calculate the new depth
+		var depth = parseInt(parentPublicKey.depth, 16)
+		depth += 1
+		depth = depth.toString(16)
+		depth = depth.length < 2 ? "0" + depth : depth
+		
+		
+		var bip32PublicKey = new Bip32Key()
+		bip32PublicKey.network 			= Bip32.MAINNET_PUBLIC
+		bip32PublicKey.depth 			= depth
+		bip32PublicKey.fingerprint 		= fingerprint
+		bip32PublicKey.index 			= childIndexHex
+		bip32PublicKey.chainCode 		= chainCode
+		bip32PublicKey.key 				= compressedPublicKey
+		bip32PublicKey.rawKey			= KI
+		bip32PublicKey.isPrivate		= false
+		return bip32PublicKey
 	}
 	
 	static publicChildFromPrivateParent() {
 		
 	}
 	
+	static privateChildFromPublicParent() {
+		console.log("ERROR: Deriving private child key from public parent key is not possible")
+	}
+	
+	
+	/**
+		Create a public key from a private key	
+		privateKey:Bip32Key - The private key
+	*/
+	static publicKeyFromPrivateKey(privateKey) {
+		//Make sure there's no checksum
+		var pKey = privateKey.key.substr(0, 64)
+		
+		//Create the parent fingerprint
+		var compressedPublicKey = KeyGenerator.generateCompressedBitcoinPublicKey(pKey)
+		var rawPublicKey 		= KeyGenerator.generateRawPublicKey(pKey)
+		
+		var bip32PublicKey = new Bip32Key()
+		bip32PublicKey.network 			= Bip32.MAINNET_PUBLIC
+		bip32PublicKey.depth 			= privateKey.depth
+		bip32PublicKey.fingerprint 		= privateKey.fingerprint
+		bip32PublicKey.index 			= privateKey.index
+		bip32PublicKey.chainCode 		= privateKey.chainCode
+		bip32PublicKey.key 				= compressedPublicKey
+		bip32PublicKey.rawKey			= rawPublicKey
+		bip32PublicKey.isPrivate		= false
+		
+		return bip32PublicKey
+	}
+
+	
+
 	/**
 		Get the fingerprint of an extended key.  Extended keys can be identified by the Hash160 (RIPEMD160 after SHA256) of the serialized ECDSA public key K, ignoring the chain code
-		@param serializedPublicKey - The serialized ECDSA public key K 
+		@param key:Bip32Key - a bip 32 key
 	*/
-	static getIdentifier(privateKey) {
-		var compressedPublicKey = KeyGenerator.generateCompressedBitcoinPublicKey(privateKey)
+	static getIdentifier(key) {
+		var keystr = ""
+		if(key instanceof Bip32Key) {
+			if(key.isPrivate === true) {
+				keystr = KeyGenerator.generateCompressedBitcoinPublicKey(key.key)
+			}
+			else
+			{
+				keystr = key.key
+			}		
+		}
+		else {
+			keystr = key
+		}
 		
-		var bits = sjcl.codec.hex.toBits(compressedPublicKey.toLowerCase())
+		//var compressedPublicKey = KeyGenerator.generateCompressedBitcoinPublicKey(privateKey)
+		
+		var bits = sjcl.codec.hex.toBits(keystr.toLowerCase())
 		var hash1 = sjcl.hash.sha256.hash(bits);
 		var hash2 = sjcl.hash.ripemd160.hash(hash1)
 		var identifier = sjcl.codec.hex.fromBits(hash2)
@@ -209,12 +344,25 @@ export class Bip32 {
 	
 	/**
 		Get the fingerprint of an extended key.  Extended keys can be identified by the Hash160 (RIPEMD160 after SHA256) of the serialized ECDSA public key K, ignoring the chain code
-		@param serializedPublicKey - The serialized ECDSA public key K 
 	*/
-	static getFingerprint(privateKey) {
-		var compressedPublicKey = KeyGenerator.generateCompressedBitcoinPublicKey(privateKey)
+	static getFingerprint(key) {
+		var keystr = ""
+		if(key instanceof Bip32Key) {
+			if(key.isPrivate === true) {
+				keystr = KeyGenerator.generateCompressedBitcoinPublicKey(key.key)
+			}
+			else
+			{
+				keystr = key.key
+			}		
+		}
+		else
+		{
+			keystr = key
+		}
 		
-		var bits = sjcl.codec.hex.toBits(compressedPublicKey.toLowerCase())
+		
+		var bits = sjcl.codec.hex.toBits(keystr.toLowerCase())
 		var hash1 = sjcl.hash.sha256.hash(bits);
 		var hash2 = sjcl.hash.ripemd160.hash(hash1)
 		var identifier = sjcl.codec.hex.fromBits(hash2)
@@ -222,6 +370,7 @@ export class Bip32 {
 		
 		return fingerprint
 	}
+	
 	
 	/**
 		Serialize a key based on the Bip32 standard.  This uses hex strings as input.  Ex: "04FF90" no 0x in the beginning

@@ -48,7 +48,7 @@ export class KeyGenerator {
 		var subs = hex.substr(0, hex.length - 8)
 		var subs2 = subs.substr(2, hex.length)
 		
-		return subs2.toUpperCase()
+		return subs2
 	}
 	
 	static wifCompressedFromPrivateKey(privateKey, testnet = false) {
@@ -69,10 +69,10 @@ export class KeyGenerator {
 		//testnet / regtest
 		var privateKeyAndVersion = "";
 		if(testnet === true) {
-			privateKeyAndVersion = "ef" + privateKey.toUpperCase()
+			privateKeyAndVersion = "ef" + privateKey
 		}
 		else { //mainnet 
-			privateKeyAndVersion = "80" + privateKey.toUpperCase()
+			privateKeyAndVersion = "80" + privateKey
 		}
 		
 		if(compressed === true) {
@@ -90,7 +90,7 @@ export class KeyGenerator {
 		doubleHash = sjcl.codec.hex.fromBits(doubleHash); 
 		//console.log("HASH2: " + doubleHash)
 		
-		var checksum = doubleHash.substr(0, 8).toUpperCase()
+		var checksum = doubleHash.substr(0, 8)
 		//console.log("Checksum: " + checksum)
 		
 		//Add to current result
@@ -112,7 +112,7 @@ export class KeyGenerator {
 		var bytes = bs58.decode(wif)
 		var hex = bytes.toString('hex')
 		
-		var checksum = hex.substr(hex.length - 8).toUpperCase()
+		var checksum = hex.substr(hex.length - 8)
 		var sub = hex.substr(0, hex.length - 8)
 		
 		var bits1 		= sjcl.codec.hex.toBits(sub)
@@ -120,7 +120,7 @@ export class KeyGenerator {
 		var doubleHash  = sjcl.hash.sha256.hash(hash1); 
 		var doubleHashHex = sjcl.codec.hex.fromBits(doubleHash)
 		
-		var calculatedChecksum = doubleHashHex.substr(0, 8).toUpperCase()
+		var calculatedChecksum = doubleHashHex.substr(0, 8)
 		
 		if(calculatedChecksum === checksum) {
 			return true 
@@ -131,6 +131,12 @@ export class KeyGenerator {
 		
 	}
 	
+	static generateRawPublicKey(privateKey) {
+		var theNumber = new sjcl.bn("0x" + privateKey)
+		var K = sjcl.ecc.curves.k256.G.mult(theNumber)
+		return K
+	}
+	
 	static generatePublicKey(privateKey) {
 				
 		var theNumber = new sjcl.bn("0x" + privateKey)
@@ -139,7 +145,7 @@ export class KeyGenerator {
 		var xhex = sjcl.codec.hex.fromBits(K.x.toBits())
 		var yhex = sjcl.codec.hex.fromBits(K.y.toBits())
 				
-		return {x: xhex.toString().toUpperCase(), y: yhex.toString().toUpperCase()}
+		return {x: xhex.toString(), y: yhex.toString()}
 	}
 	
 	static generateBitcoinPublicKey(privateKey) {
@@ -151,16 +157,12 @@ export class KeyGenerator {
 		var xhex = sjcl.codec.hex.fromBits(K.x.toBits())
 		var yhex = sjcl.codec.hex.fromBits(K.y.toBits())
 		
-		var pubKey = "04" + xhex.toString().toUpperCase() + yhex.toString().toUpperCase()
+		var pubKey = "04" + xhex.toString() + yhex.toString()
 		return pubKey
 	}
 	
-	static generateCompressedBitcoinPublicKey(privateKey) {
+	static compressRawPublicKey(K) {
 		
-		
-		var theNumber = new sjcl.bn("0x" + privateKey)
-		var K = sjcl.ecc.curves.k256.G.mult(theNumber)
-				
 		var xhex = sjcl.codec.hex.fromBits(K.x.toBits())
 		var yhex = sjcl.codec.hex.fromBits(K.y.toBits())
 		
@@ -180,8 +182,19 @@ export class KeyGenerator {
 			prefix = "03"
 		}
 		
-		var pubKey = prefix + xhex.toString().toUpperCase()
+		var pubKey = prefix + xhex.toString()
 		return pubKey
+	}
+	
+	/**
+		Generate a compressed bitcoin public key from a private key
+		@param privateKey - The private key in hex	
+	*/
+	static generateCompressedBitcoinPublicKey(privateKey) {
+		var theNumber = new sjcl.bn("0x" + privateKey)
+		var K = sjcl.ecc.curves.k256.G.mult(theNumber)
+		
+		return KeyGenerator.compressRawPublicKey(K)
 	}
 	
 	
@@ -217,8 +230,44 @@ export class KeyGenerator {
 		var publicKey = KeyGenerator.generateBitcoinPublicKey(privateKey)
 		var address = KeyGenerator.generateBitcoinAddressFromPublicKey(publicKey)
 		return address
-		
 	}
 	
+	
+	/**
+		NOT WORKING	
+	*/
+	static decompressPublicKey(key) {
+		console.log(key)
+		
+		//Now we recover the point that generated this key
+		//we have y but not x. the curve is y^2 = x^3 + 7
+		//so we need pow(y^2 - 7, 1/3)
+		
+		//console.log(sjcl.ecc.ecdsa.generateKeys(sjcl.ecc.curves.k256))
+		var p = "fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f"
+		//console.log("INT: " + parseInt(p, 16))
+		var x = key.substring(2, key.length)
+		console.log("x: " + x)
+		
+		var pbn = new sjcl.bn("0x" + p)
+		
+		var xbn = new sjcl.bn("0x" + x)
+		var temp = xbn.power(2)
+		temp = temp.mod(pbn)
+		temp = temp.sub(7)
+		temp = temp.mod(pbn)
+		//console.log(temp.toString)
+		
+		var test = new sjcl.bn("0x10")
+		//test = test.power(0.5)
+		console.log(test.toString())
+		//Now we recover the point that generated this key
+		//we have y but not x. the curve is y^2 = x^3 + 7
+		//so we need pow(y^2 - 7, 1/3)
+		
+		//temp.power(pbn)
+		
+		console.log(temp.toString())		
+	}
 	
 }

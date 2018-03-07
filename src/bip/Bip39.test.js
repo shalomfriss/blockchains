@@ -159,7 +159,7 @@ test('Check all test vectors', () => {
 		var mnemonic = Bip39.generateMnemonicWordsFromEntropy(vector[0])
 		var seed = Bip39.createSeed(mnemonic, "TREZOR")
 		var keys = Bip32.createMasterKeys(seed)
-		var masterPrivateKey = keys.m 
+		var masterPrivateKey = Bip32.serializeKey(keys.m) 
 		
 		expect(mnemonic).toEqual(vector[1])
 		expect(seed).toEqual(vector[2])
