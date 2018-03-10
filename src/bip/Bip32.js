@@ -481,7 +481,8 @@ export class Bip32 {
 	
 	/**
 		Serialize a key based on the Bip32 standard.  This uses hex strings as input.  Ex: "04FF90" no 0x in the beginning
-		@param network - 4 byte: A hex string containing the version to encode (MAINNET_PUBLIC, MAINNET_PRIVATE, TESTNET_PUBLIC, TESTNET_PRIVATE)
+		You can either provide a Bip32Key instance or fill in the details
+		@param network - a Bip32Key instance or 4 byte: A hex string containing the version to encode (MAINNET_PUBLIC, MAINNET_PRIVATE, TESTNET_PUBLIC, TESTNET_PRIVATE)
 		@param depth - 1 byte: depth: 0x00 for master nodes, 0x01 for level-1 derived keys, ....
 		@param parentFingerprint - 4 bytes: the fingerprint of the parent's key (0x00000000 if master key)
 		@param childNumber - 4 bytes: This is ser32(i) for i in xi = xpar/i, with xi the key being serialized. (0x00000000 if master key)
@@ -555,7 +556,32 @@ export class Bip32 {
 	static validatePublicKey(publicKey) {
 		var unKey = Bip32.unserializeKey(publicKey)
 		var dKey = Bip32.decompressPublicKey(unKey.key)
+		var curve = sjcl.ecc.curves.k256
+		var field_modulus = curve.field.modulus
+		var x = dKey.x
+		var y = dKey.y
 		
+		var ePoint = new sjcl.ecc.point(curve, x, y)
+		var eZero = new sjcl.ecc.point(curve, 0, 0)
+		
+		console.log(eZero)
+		//Verify that the public key is not the “point at infinity”, represented as O.
+		
+		//Verify that the affine x and y coordinates of the point represented by the public key are in the range [0, p – 1] where p is the prime defining the finite field.
+		
+		console.log(y.toString())
+		
+		
+		//Verify that y^2 = x^3 + 7
+		var ys = dKey.y.square()
+		console.log(ys.toString())
+		var xs = x.mul(x).mul(x).add(7).mod(field_modulus)
+		
+		if(ys.equals(xs) === false) {
+			return false
+		}
+		
+		return true
 		
 	}
 	
