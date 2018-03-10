@@ -31,7 +31,8 @@ test('Check BIP32 test vector 1', () => {
 	
 	var prvm0H = Bip32.privateChildFromPrivateParent(keysm.m, 2147483648 + 0)
 	var pubm0H = Bip32.publicKeyFromPrivateKey(prvm0H)
-	var pubkey0H = Bip32.publicChildFromPublicParent(keysm.M, 2147483648 + 0)		//Should not be able to derive hardened key
+	//Should not be able to derive hardened key (https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
+	var pubkey0H = Bip32.publicChildFromPublicParent(keysm.M, 2147483648 + 0)		
 	var pubChild0H = Bip32.publicChildFromPrivateParent(keysm.m, 2147483648 + 0) 
 	expect(Bip32.serializeKey(prvm0H)).toEqual(m0Hprv)
 	expect(Bip32.serializeKey(pubm0H)).toEqual(m0Hpub)
@@ -191,3 +192,126 @@ test('Check BIP32 test vector 3', () => {
 	expect(Bip32.serializeKey(pubChildm0H)).toEqual(m0Hpub)
 	
 })
+
+
+
+
+test('Check public key decompression for test vector 1', () => {
+	
+	var seed = "000102030405060708090a0b0c0d0e0f"
+	
+	var keysm = Bip32.createMasterKeys(seed)
+	
+	var compressedPublicKey = keysm.M.key
+	var ucompressedPublicKeyKey = Bip32.decompressPublicKey(compressedPublicKey)
+	var recompressedPublicKey = Bip32.compressRawPublicKey(ucompressedPublicKeyKey)
+	expect(recompressedPublicKey).toEqual(compressedPublicKey)
+	
+	console.log("PASS")
+	
+	var prvm0H = Bip32.privateChildFromPrivateParent(keysm.m, 2147483648 + 0)
+	var pubm0H = Bip32.publicKeyFromPrivateKey(prvm0H)
+	compressedPublicKey = pubm0H.key
+	ucompressedPublicKeyKey = Bip32.decompressPublicKey(compressedPublicKey)
+	recompressedPublicKey = Bip32.compressRawPublicKey(ucompressedPublicKeyKey)
+	expect(recompressedPublicKey).toEqual(compressedPublicKey)
+	
+	
+	var prvm02147483647H = Bip32.privateChildFromPrivateParent(prvm0H, 2147483648 + 2147483647)
+	var pubm02147483647H = Bip32.publicKeyFromPrivateKey(prvm02147483647H)
+	compressedPublicKey = pubm02147483647H.key
+	ucompressedPublicKeyKey = Bip32.decompressPublicKey(compressedPublicKey)
+	recompressedPublicKey = Bip32.compressRawPublicKey(ucompressedPublicKeyKey)
+	expect(recompressedPublicKey).toEqual(compressedPublicKey)
+		
+	var prvm02147483647H1 = Bip32.privateChildFromPrivateParent(prvm02147483647H, 1)
+	var pubm02147483647H1 = Bip32.publicKeyFromPrivateKey(prvm02147483647H1)	
+	compressedPublicKey = pubm02147483647H1.key
+	ucompressedPublicKeyKey = Bip32.decompressPublicKey(compressedPublicKey)
+	recompressedPublicKey = Bip32.compressRawPublicKey(ucompressedPublicKeyKey)
+	expect(recompressedPublicKey).toEqual(compressedPublicKey)
+		
+	var prvm02147483647H12147483646H = Bip32.privateChildFromPrivateParent(prvm02147483647H1, 2147483648 + 2147483646)
+	var pubm02147483647H12147483646H = Bip32.publicKeyFromPrivateKey(prvm02147483647H12147483646H)
+	compressedPublicKey = pubm02147483647H12147483646H.key
+	ucompressedPublicKeyKey = Bip32.decompressPublicKey(compressedPublicKey)
+	recompressedPublicKey = Bip32.compressRawPublicKey(ucompressedPublicKeyKey)
+	expect(recompressedPublicKey).toEqual(compressedPublicKey)
+		
+	var prvm02147483647H12147483646H2 = Bip32.privateChildFromPrivateParent(prvm02147483647H12147483646H, 2)
+	var pubm02147483647H12147483646H2 = Bip32.publicKeyFromPrivateKey(prvm02147483647H12147483646H2)
+	compressedPublicKey = pubm02147483647H12147483646H2.key
+	ucompressedPublicKeyKey = Bip32.decompressPublicKey(compressedPublicKey)
+	recompressedPublicKey = Bip32.compressRawPublicKey(ucompressedPublicKeyKey)
+	expect(recompressedPublicKey).toEqual(compressedPublicKey)
+
+	
+})
+
+test('Check public key decompression for test vector 2', () => {
+	
+	var seed = "fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542"
+	var keysm = Bip32.createMasterKeys(seed)
+	
+	var compressedPublicKey = keysm.M.key
+	var ucompressedPublicKeyKey = Bip32.decompressPublicKey(compressedPublicKey)
+	var recompressedPublicKey = Bip32.compressRawPublicKey(ucompressedPublicKeyKey)
+	expect(recompressedPublicKey).toEqual(compressedPublicKey)
+	
+	
+	var prvm0H = Bip32.privateChildFromPrivateParent(keysm.m, 2147483648 + 0)
+	var pubm0H = Bip32.publicKeyFromPrivateKey(prvm0H)
+	var compressedPublicKey = pubm0H.key
+	var ucompressedPublicKeyKey = Bip32.decompressPublicKey(compressedPublicKey)
+	var recompressedPublicKey = Bip32.compressRawPublicKey(ucompressedPublicKeyKey)
+	expect(recompressedPublicKey).toEqual(compressedPublicKey)
+	
+	var prvm02147483647H = Bip32.privateChildFromPrivateParent(prvm0H, 2147483648 + 2147483647)
+	var pubm02147483647H = Bip32.publicKeyFromPrivateKey(prvm02147483647H)
+	var compressedPublicKey = pubm02147483647H.key
+	var ucompressedPublicKeyKey = Bip32.decompressPublicKey(compressedPublicKey)
+	var recompressedPublicKey = Bip32.compressRawPublicKey(ucompressedPublicKeyKey)
+	expect(recompressedPublicKey).toEqual(compressedPublicKey)
+	
+	var prvm02147483647H1 = Bip32.privateChildFromPrivateParent(prvm02147483647H, 1)
+	var pubm02147483647H1 = Bip32.publicKeyFromPrivateKey(prvm02147483647H1)
+	var compressedPublicKey = pubm02147483647H1.key
+	var ucompressedPublicKeyKey = Bip32.decompressPublicKey(compressedPublicKey)
+	var recompressedPublicKey = Bip32.compressRawPublicKey(ucompressedPublicKeyKey)
+	expect(recompressedPublicKey).toEqual(compressedPublicKey)
+	
+	var prvm02147483647H12147483646H = Bip32.privateChildFromPrivateParent(prvm02147483647H1, 2147483648 + 2147483646)
+	var pubm02147483647H12147483646H = Bip32.publicKeyFromPrivateKey(prvm02147483647H12147483646H)
+	var compressedPublicKey = pubm02147483647H12147483646H.key
+	var ucompressedPublicKeyKey = Bip32.decompressPublicKey(compressedPublicKey)
+	var recompressedPublicKey = Bip32.compressRawPublicKey(ucompressedPublicKeyKey)
+	expect(recompressedPublicKey).toEqual(compressedPublicKey)
+	
+	var prvm02147483647H12147483646H2 = Bip32.privateChildFromPrivateParent(prvm02147483647H12147483646H, 2)
+	var pubm02147483647H12147483646H2 = Bip32.publicKeyFromPrivateKey(prvm02147483647H12147483646H2)
+	var compressedPublicKey = pubm02147483647H12147483646H2.key
+	var ucompressedPublicKeyKey = Bip32.decompressPublicKey(compressedPublicKey)
+	var recompressedPublicKey = Bip32.compressRawPublicKey(ucompressedPublicKeyKey)
+	expect(recompressedPublicKey).toEqual(compressedPublicKey)
+	
+})
+test('Check public key decompression for test vector 3', () => {
+	var seed = "4b381541583be4423346c643850da4b320e46a87ae3d2a4e6da11eba819cd4acba45d239319ac14f863b8d5ab5a0d0c64d2e8a1e7d1457df2e5a3c51c73235be"
+	
+	var keysm = Bip32.createMasterKeys(seed)
+	
+	var prvm0H = Bip32.privateChildFromPrivateParent(keysm.m, 2147483648)
+	var pubm0H = Bip32.publicKeyFromPrivateKey(prvm0H)
+	var compressedPublicKey = pubm0H.key
+	var ucompressedPublicKeyKey = Bip32.decompressPublicKey(compressedPublicKey)
+	var recompressedPublicKey = Bip32.compressRawPublicKey(ucompressedPublicKeyKey)
+	expect(recompressedPublicKey).toEqual(compressedPublicKey)
+})
+
+
+test('Check Bip32 Key validation', () => {
+	var mpub = "xpub661MyMwAqRbcEZVB4dScxMAdx6d4nFc9nvyvH3v4gJL378CSRZiYmhRoP7mBy6gSPSCYk6SzXPTf3ND1cZAceL7SfJ1Z3GC8vBgp2epUt13"
+	//Bip32.validatePublicKey(mpub)
+	
+})
+

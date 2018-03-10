@@ -3,6 +3,7 @@ import 'sjcl/core/bn';
 import 'sjcl/core/ecc'; 
 import 'sjcl/core/codecBytes'; 
 import 'sjcl/core/ripemd160';
+import '../vendor/sjcl-extended/src/sjcl-extramath';
 import crypto from 'crypto';
 import bs58 from 'bs58';
 import { CryptoUtil } from './../crypto/CryptoUtil';
@@ -381,9 +382,45 @@ export class Bip32 {
 		var pubKey = prefix + xhex.toString()
 		return pubKey
 	}
-
-
-
+	
+	/**
+		Decompress a compressed public key
+		@param 	publicKey - A compressed public key (hex string starting with 02 or 03)
+		@return sjcl.ecc.point - 
+		*TODO: Formalize based on http://www.secg.org/sec1-v2.pdf
+	*/
+	static decompressPublicKey(publicKey) {
+		
+		//Prep data
+		var curve = sjcl.ecc.curves.k256
+		var field_order = curve.r
+		var field_modulus = curve.field.modulus
+		var p = field_modulus.add(1).div(4)
+		var evenodd = publicKey.substr(0, 2)
+		var checkVal = evenodd == "02" ? 0 : 1
+		
+		var key = publicKey.substr(2, publicKey.length)
+		
+		//Exec ECC operations
+		key = new sjcl.bn("0x" + key)
+		var ysquared = key.mul(key).mul(key).add(curve.a.mul(key)).add(curve.b).mod(field_modulus);
+		var y = ysquared.powermod(p, field_modulus)
+		
+		var check = y.limbs[0] & 1;
+		
+		if(check === checkVal) {
+			 y = y
+		}
+		else {
+			y = field_modulus.sub(y).normalize();
+		}
+		
+		var keyPoint = new sjcl.ecc.point(curve, key, y);
+		return keyPoint	
+		
+	}
+	
+		
 	/**
 		Get the fingerprint of an extended key.  Extended keys can be identified by the Hash160 (RIPEMD160 after SHA256) of the serialized ECDSA public key K, ignoring the chain code
 		@param key:Bip32Key - a bip 32 key
@@ -509,5 +546,17 @@ export class Bip32 {
 		return key
 	}
 	
+	
+	/*
+		validate a key that will be imported
+		When importing a serialized extended public key, implementations must verify whether the X coordinate in the public key data corresponds to a point on the curve. If not, the extended public key is invalid.
+		#param publicKey - a serialized extended public key
+	*/
+	static validatePublicKey(publicKey) {
+		var unKey = Bip32.unserializeKey(publicKey)
+		var dKey = Bip32.decompressPublicKey(unKey.key)
+		
+		
+	}
 	
 }
