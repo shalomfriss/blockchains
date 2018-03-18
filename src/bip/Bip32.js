@@ -4,6 +4,7 @@ import 'sjcl/core/ecc';
 import 'sjcl/core/codecBytes'; 
 import 'sjcl/core/ripemd160';
 import '../vendor/sjcl-extended/src/sjcl-extramath';
+import '../vendor/sjcl-extended/src/sjcl-ecc-pointextras';
 import crypto from 'crypto';
 import bs58 from 'bs58';
 import { CryptoUtil } from './../crypto/CryptoUtil';
@@ -336,6 +337,9 @@ export class Bip32 {
 		return K
 	}
 	
+	/**
+		Generate a public key from a private key hex string	
+	*/
 	static generatePublicKey(privateKey) {
 				
 		var theNumber = new sjcl.bn("0x" + privateKey)
@@ -358,6 +362,9 @@ export class Bip32 {
 		return Bip32.compressRawPublicKey(K)
 	}
 	
+	/**
+		Compress a raw public key, a key in the form of a point with x, y in bits	
+	*/
 	static compressRawPublicKey(K) {
 		
 		var xhex = sjcl.codec.hex.fromBits(K.x.toBits())
@@ -398,7 +405,6 @@ export class Bip32 {
 		var p = field_modulus.add(1).div(4)
 		var evenodd = publicKey.substr(0, 2)
 		var checkVal = evenodd == "02" ? 0 : 1
-		
 		var key = publicKey.substr(2, publicKey.length)
 		
 		//Exec ECC operations
@@ -407,7 +413,6 @@ export class Bip32 {
 		var y = ysquared.powermod(p, field_modulus)
 		
 		var check = y.limbs[0] & 1;
-		
 		if(check === checkVal) {
 			 y = y
 		}
@@ -547,6 +552,13 @@ export class Bip32 {
 		return key
 	}
 	
+	static getCurvePoint(key) {
+		var curve = sjcl.ecc.curves.k256
+		var x = new sjcl.bn.prime.p256k(key.x.toString())
+		var y = new sjcl.bn.prime.p256k(key.y.toString())
+		var ePoint = new sjcl.ecc.point(curve, x, y)
+		return ePoint
+	}
 	
 	/*
 		validate a key that will be imported
@@ -554,27 +566,54 @@ export class Bip32 {
 		#param publicKey - a serialized extended public key
 	*/
 	static validatePublicKey(publicKey) {
+		
 		var unKey = Bip32.unserializeKey(publicKey)
-		var dKey = Bip32.decompressPublicKey(unKey.key)
+		
+		//Get rid of the checksum
+		var dKey = Bip32.decompressPublicKey(unKey.key.substr(0, unKey.key.length - 8))
+		
 		var curve = sjcl.ecc.curves.k256
 		var field_modulus = curve.field.modulus
-		var x = dKey.x
-		var y = dKey.y
 		
-		var ePoint = new sjcl.ecc.point(curve, x, y)
+		var ePoint = Bip32.getCurvePoint(dKey)
 		var eZero = new sjcl.ecc.point(curve, 0, 0)
 		
-		console.log(eZero)
-		//Verify that the public key is not the “point at infinity”, represented as O.
+		//Make sure it's a valid point on the curve
+		if(ePoint.isValidPoint() === false) {
+			return false
+		}
 		
+		//Another "on curve" check
+		var ebits = ePoint.toBits()
+		try {
+			var Q = sjcl.ecc.curves.k256.fromBits(ebits)
+		}
+		catch(e) {
+			return false
+		}
+		
+		
+		//Verify that the public key is not the “point at infinity”, represented as O.
 		//Verify that the affine x and y coordinates of the point represented by the public key are in the range [0, p – 1] where p is the prime defining the finite field.
 		
-		console.log(y.toString())
+		var curveOrder =  new sjcl.bn("0x" + Bip32.SECP256K1_ORDER)
+		var orderPlusOne = new sjcl.bn("0x" + Bip32.SECP256K1_ORDER)
+		orderPlusOne = orderPlusOne.add(1)
+		
+		//Make sure it doesn't equal zero
+		if(ePoint.x.equals(sjcl.bn.ZERO) && ePoint.y.equals(sjcl.bn.ZERO)) { return false }
+		
+		//Make sure it's greater than zero
+		if(ePoint.x.greaterEquals(sjcl.bn.ZERO) === false || ePoint.y.greaterEquals(sjcl.bn.ZERO) === false) { return false }
+		
+		//Make sure it's less than p
+		if(ePoint.x.greaterEquals(curveOrder) === true || ePoint.y.greaterEquals(curveOrder) === true) { return false }
 		
 		
 		//Verify that y^2 = x^3 + 7
-		var ys = dKey.y.square()
-		console.log(ys.toString())
+		var x = ePoint.x
+		var y = ePoint.y 
+		var ys = y.square()
 		var xs = x.mul(x).mul(x).add(7).mod(field_modulus)
 		
 		if(ys.equals(xs) === false) {

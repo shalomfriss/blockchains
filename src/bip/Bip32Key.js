@@ -12,4 +12,13 @@ export class Bip32Key {
 		this.chainCode 			= ""
 		this.isPrivate 			= ""
 	} 
+	
+	/**
+		Check to see if this key is equal to the one provided
+		@param toKey:Bip32Key - The bip32 key to compare to	
+	*/
+	isEqual(toKey) {
+			
+	}
+	
 }

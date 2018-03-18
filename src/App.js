@@ -10,6 +10,7 @@ import { Validator } from './crypto/Validator';
 import { Bip39 } from './bip/Bip39';
 import { Bip32 } from './bip/Bip32';
 
+
 class App extends Component {
   render() {
 	
