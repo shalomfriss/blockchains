@@ -23,6 +23,10 @@ export class Bip32 {
 	static SECP256K1_ORDER = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141"
 	
 	
+	/******************************************************************************************************************/
+	//MAIN ROUTINES
+	/******************************************************************************************************************/
+	
 	/**
 		Create a master node from a seed.  This returns an object containing the master private key (m) the master chain code (c) 
 		and the master public key (M)
@@ -199,7 +203,7 @@ export class Bip32 {
 		var hardened = false
 		if(childIndex >= 2147483648) {hardened = true}
 		if(hardened == true) {
-			console.log("ERROR: Cannot derive hardened child")
+			//console.log("ERROR: Cannot derive hardened child")
 			return
 		}		
 		
@@ -552,6 +556,10 @@ export class Bip32 {
 		return key
 	}
 	
+	/**
+		Get an ECC point on the k256 curve
+		@param key - an object containing x and y coordinates in bits	
+	*/
 	static getCurvePoint(key) {
 		var curve = sjcl.ecc.curves.k256
 		var x = new sjcl.bn.prime.p256k(key.x.toString())
@@ -563,7 +571,7 @@ export class Bip32 {
 	/*
 		validate a key that will be imported
 		When importing a serialized extended public key, implementations must verify whether the X coordinate in the public key data corresponds to a point on the curve. If not, the extended public key is invalid.
-		#param publicKey - a serialized extended public key
+		#param publicKey - a serialized extended public key (example: xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8)
 	*/
 	static validatePublicKey(publicKey) {
 		
@@ -583,7 +591,7 @@ export class Bip32 {
 			return false
 		}
 		
-		//Another "on curve" check
+		//Another "on curve" check - fromBits will throw is not on curve
 		var ebits = ePoint.toBits()
 		try {
 			var Q = sjcl.ecc.curves.k256.fromBits(ebits)
@@ -600,12 +608,13 @@ export class Bip32 {
 		var orderPlusOne = new sjcl.bn("0x" + Bip32.SECP256K1_ORDER)
 		orderPlusOne = orderPlusOne.add(1)
 		
+		//Verify that the public key is not the “point at infinity”, represented as O
 		//Make sure it doesn't equal zero
 		if(ePoint.x.equals(sjcl.bn.ZERO) && ePoint.y.equals(sjcl.bn.ZERO)) { return false }
 		
+		//Verify that the affine x and y coordinates of the point represented by the public key are in the range [0, p – 1] where p is the prime defining the finite field
 		//Make sure it's greater than zero
 		if(ePoint.x.greaterEquals(sjcl.bn.ZERO) === false || ePoint.y.greaterEquals(sjcl.bn.ZERO) === false) { return false }
-		
 		//Make sure it's less than p
 		if(ePoint.x.greaterEquals(curveOrder) === true || ePoint.y.greaterEquals(curveOrder) === true) { return false }
 		
@@ -619,6 +628,12 @@ export class Bip32 {
 		if(ys.equals(xs) === false) {
 			return false
 		}
+		
+		//Verify that nQ = O (the point at infinity), where n is the order of the curve, and Q is the public key point.
+		//var res = ePoint.mult(curveOrder)
+		//var res = ePoint.mult(curveOrder)
+		//console.log(res instanceof sjcl.ecc.point)
+		//console.log(res)
 		
 		return true
 		

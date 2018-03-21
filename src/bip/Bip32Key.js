@@ -7,7 +7,7 @@ export class Bip32Key {
 		this.depth			 	= ""
 		this.index 				= ""
 		this.parentFingerprint 	= ""
-		this.key 				= ""
+		this.key 				= ""	//key contains checksum on the end
 		this.rawKey				= "" 	//Used for raw public key data
 		this.chainCode 			= ""
 		this.isPrivate 			= ""

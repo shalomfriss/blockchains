@@ -9,7 +9,10 @@ import { WalletUtil } from './wallet/WalletUtil';
 import { Validator } from './crypto/Validator';
 import { Bip39 } from './bip/Bip39';
 import { Bip32 } from './bip/Bip32';
-
+import "uikit/dist/css/uikit.min.css";
+import "uikit/dist/js/uikit.min.js";
+import "uikit/dist/js/uikit-icons.min.js";
+import { BipComponent } from './components/BipComponent';
 
 class App extends Component {
   render() {
@@ -71,14 +74,18 @@ class App extends Component {
     return (
       <div className="App">
         <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
+          <h1 className="App-title">Cryptocurrency</h1>
         </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
+        
+        
+		<BipComponent></BipComponent>
+        
       </div>
     );
+  }
+  
+  handleGenerateClick() {
+	  console.log("etsin")
   }
 }
 
