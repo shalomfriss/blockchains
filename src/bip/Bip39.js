@@ -10,6 +10,7 @@ import unorm from 'unorm';
 
 export class Bip39 {
 	
+	
 	/**
 		Generate entropy of size, 128, 160, 192, 224 or 256	
 		@param amount:Number - An integer that can take one of the values [128, 160, 192, 224, 256]
@@ -38,6 +39,20 @@ export class Bip39 {
 		var mnemonic = Bip39.generateMnemonicWordsFromEntropy(entropy)	
 		return mnemonic
 	}	
+	
+	/**
+		Generate the entropy string from the word string
+		@param wordString:String - A string containing the mnemonic words	
+	*/
+	static generateEntropyFromWords(wordString:String) {
+		var words = wordString.split(" ")
+		for(var i = 0; i < words.length; i++) {
+			var word = words[i].trim()
+			var ind = Bip39.wordsRev[word]
+			console.log("INDEX: " + ind)
+		}
+	}
+	
 	
 	static generateMnemonicWordsFromEntropy(entropy) {
 		if(entropy.length < 32 || entropy.length > 64 || entropy.length % 4 !== 0) {
@@ -86,3 +101,9 @@ export class Bip39 {
 	}
 	
 }
+
+Bip39.wordsRev = []
+for(var i = 0; i < Words.words.length; i++) {
+	Bip39.wordsRev[Words.words[i]] = i
+}
+

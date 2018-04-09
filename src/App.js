@@ -12,6 +12,7 @@ import { Bip32 } from './bip/Bip32';
 import "uikit/dist/css/uikit.min.css";
 import "uikit/dist/js/uikit.min.js";
 import "uikit/dist/js/uikit-icons.min.js";
+import "./fonts/fonts.css";
 import { BipComponent } from './components/BipComponent';
 
 class App extends Component {
@@ -73,10 +74,15 @@ class App extends Component {
     
     return (
       <div className="App">
+      	
+	  	
+	  	
         <header className="App-header">
           <h1 className="App-title">Cryptocurrency</h1>
         </header>
         
+        <h1 className="uk-h1 heading1">Bip32</h1>        
+		
         
 		<BipComponent></BipComponent>
         

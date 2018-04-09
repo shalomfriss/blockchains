@@ -1,7 +1,13 @@
 .App {
   text-align: center;
+  font-family: "Proxima Nova";
+  font-weight: 300;
+  color: #666;
 }
 
+body {
+	width: 100%;
+}
 .App-logo {
   animation: App-logo-spin infinite 20s linear;
   height: 80px;
@@ -28,17 +34,82 @@
   to { transform: rotate(360deg); }
 }
 
-.mainContainer {
+
+
+/** BIP32 */
+.Bip32Container {
 	max-width: 100%;
 	text-align: center;
 	padding: 20px;
 	margin-left: 20px;
+	max-width: 660px;
+	width: auto;
+	overflow: scroll;
+}
+
+
+.formElement {
+	width: 100%;	
+	margin-bottom: 30px;
+	min-height: 40px;
+	height: auto;
+}
+
+
+label {
+	float: left; 
+	margin-right: 1em; 
+	margin-right: 1em; 
+	text-align: center;
+	line-height: 1;
+	margin-bottom: 6px;
+}
+
+formElement label { 
+	float: left; 
+	margin-right: 1em; 
+	margin-right: 1em; 
+	text-align: right;
+}
+
+formElement input { 
+	float: right; 
+}
+
+
+.inputField {
+	width: 100%;	
+	float:right;
+}
+
+.inputLabel {
+	display: inline-block;
+	float:left;
 }
 
 .mainContainer .generateWords {
 	margin: 0px auto;
+	display: inline-block;
 }
 
-.generateButton {
+.aButton {
+	height:28px;
+	display: inline-block;
 	float:left;
+	width: 200px;
+	margin-top: 6px;
 }
+
+.heading1 {
+	font-family: "proxima_nova_scosfthin";
+	color:#666;
+}
+
+.inputRow {
+	max-width: 1000px;
+	margin: 0px auto;
+	clear: both;
+	min-height: 100px;
+	height: auto;
+}
+
