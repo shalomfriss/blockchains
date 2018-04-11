@@ -125,3 +125,7 @@ formElement input {
 	float:left;
 }
 
+.generateEntropyButton {
+	margin-bottom: 20px !important;
+}
+

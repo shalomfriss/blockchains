@@ -17,7 +17,7 @@ export class Bip39 {
 	*/
 	static generateEntropy(amount) {
 		if(amount % 32 != 0 || amount < 128 || amount > 256) {
-			console.log("ERROR: Entropy amount has to be a multiple of 32 and in the rance [128, 256]")
+			console.log("ERROR: Entropy amount has to be a multiple of 32 and in the range [128, 256]")
 			return
 		}
 		
@@ -46,16 +46,11 @@ export class Bip39 {
 	*/
 	static generateEntropyFromWords(wordString:String) {
 		var words = wordString.split(" ")
-		console.log(words)
 		var indices = []
 		for(var i = 0; i < words.length; i++) {
 			var word = words[i].trim()
 			var ind = Bip39.wordsRev[word]
 			indices.push(ind)
-			
-			console.log("INDEX: " + word + " - " + ind + " - " +  Words.words[ind] )
-			
-			
 		}
 		
 		var preparedArrayBuffer = new Uint32Array(indices);
@@ -63,7 +58,7 @@ export class Bip39 {
 		var result = sjcl.codec.bytes.toBits(bytes);
 		
 		//var checksum =  sjcl.bitArray.bitSlice(result, 0, checksumLengthInBits)
-		console.log(result)
+		//console.log(result)
 		
 		
 	}

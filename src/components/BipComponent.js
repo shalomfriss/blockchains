@@ -14,7 +14,10 @@ export class BipComponent extends React.Component {
 		    wordsOpacity: 1,
 		    entropyEvents: "none",
 		    wordsEvents: "all",
-		    entropyEnabled: false
+		    entropyEnabled: false,
+		    entropyFieldValid: false,
+		    entropy: ""
+		    
 		};
 		
 	    // This binding is necessary to make `this` work in the callback
@@ -23,13 +26,14 @@ export class BipComponent extends React.Component {
 	    this.handleWordsChanged = this.handleWordsChanged.bind(this)
 	    this.handleEntropyCheckboxClick = this.handleEntropyCheckboxClick.bind(this)
 	    this.handleGenerateEntropyClicked = this.handleGenerateEntropyClicked.bind(this)
-	    
+	    this.handleEntropyChanged = this.handleEntropyChanged.bind(this)
 	    
 	}
 	
 	componentDidMount() {
 		this.disableEntropyMode()
 	}
+	
 	/**
 		The passphrase changed	
 	*/
@@ -44,7 +48,7 @@ export class BipComponent extends React.Component {
 			seed: seed
 		})
 		
-		Bip39.generateEntropyFromWords(words)
+		//Bip39.generateEntropyFromWords(words)
   	}
   	
   	/**
@@ -63,7 +67,7 @@ export class BipComponent extends React.Component {
 		
 		this.refs.generatedWords.value = words
 		
-		Bip39.generateEntropyFromWords(words)
+		//Bip39.generateEntropyFromWords(words)
 	}
 	
 	/**
@@ -80,14 +84,76 @@ export class BipComponent extends React.Component {
 			seed: seed
 		})
 		
-		Bip39.generateEntropyFromWords(words)
+		//Bip39.generateEntropyFromWords(words)
 	}
 	
 	
+	/************************************************************************************************/
+	//ENTROPY SECTION
+	/************************************************************************************************/
+	/**
+		Generate entropy was clicked	
+	*/
 	handleGenerateEntropyClicked() {
-		console.log("ENT")	
+		
+		this.setState({
+			entropyFieldValid: true
+		})
+		var ent = Bip39.generateEntropy(128)
+		this.refs.generatedEntropy.value = ent
+		var words = Bip39.generateMnemonicWordsFromEntropy(ent)
+		this.refs.generatedWords.value = words
+		
+		var passphrase = this.state.passphrase
+		var seed = Bip39.createSeed(words, passphrase)
+		
+		this.setState({
+			passphrase: passphrase, 
+			words: words,
+			seed: seed
+		})
+		//this.handleWordsChanged()
 	}
 	
+	/**
+		Entropy input text changed	
+	*/
+	handleEntropyChanged() {
+		
+		var entropyInput = this.refs.generatedEntropy.value
+		
+		
+		var amount = entropyInput.length
+		console.log(amount*4)
+		if((amount * 4) % 32 != 0 || amount * 4 < 128 || amount * 4 > 256) {
+			console.log("ERROR: Entropy amount has to be a multiple of 32 and in the range [128, 256] bits")
+			this.refs.generatedWords.value = ""
+			this.setState({
+				entropyFieldValid: false
+			})
+			return
+		}
+		
+		var words = Bip39.generateMnemonicWordsFromEntropy(entropyInput)
+		this.refs.generatedWords.value = words
+		
+		var passphrase = this.state.passphrase
+		var seed = Bip39.createSeed(words, passphrase)
+		
+		this.setState({
+			entropy: entropyInput,
+			passphrase: passphrase, 
+			words: words,
+			seed: seed,
+			entropyFieldValid: true
+		})
+				
+		
+	}
+	
+	/**
+		Entropy checkbox was clicked	
+	*/
 	handleEntropyCheckboxClick() {
 		console.log("test")
 		this.setState({entropyEnabled: !this.state.entropyEnabled})
@@ -100,6 +166,9 @@ export class BipComponent extends React.Component {
 		}
 	}
 	
+	/**
+		Enable the entropy section	
+	*/
 	enableEntropyMode() {
 		this.setState({
 			entropyOpacity: 1, 
@@ -109,6 +178,9 @@ export class BipComponent extends React.Component {
 		})
 	}
 	
+	/**
+		Disable the entropy section	
+	*/
 	disableEntropyMode() {
 		this.setState({
 			entropyOpacity: 0.4, 
@@ -120,6 +192,17 @@ export class BipComponent extends React.Component {
 	
 	
 	render() {
+		
+		var entropyClasses = "uk-input uk-column-1-1 uk-form-small inputField"
+		if(this.state.entropyFieldValid === true) {
+			entropyClasses += " uk-form-success"
+		}
+		else {
+			//if(this.state.entropy.length > 0) {
+				entropyClasses += " uk-form-danger"
+			//}
+		}
+		
 	    return (
 	       <div className="uk-container uk-padding  Bip32Container">
 	       			
@@ -128,24 +211,29 @@ export class BipComponent extends React.Component {
 	       				<label className="entropyCheckboxLabel">Use manual entropy</label>
 	       			</div>
 	       			
+	       			{/* Entropy section */}
 	       			<div className="uk-margin inputRow"  style={{opacity: this.state.entropyOpacity, pointerEvents: this.state.entropyEvents}}>
-		   				<label className="inputLabel">Input seed or press "generate entropy" to generate entropy</label>
-		   				<input className="uk-input uk-column-1-1 uk-form-small inputField" type="text" ref="generatedSeed" onChange={this.handleGenerateEntropyClicked} placeholder="Seed"></input>
-		   				<button className="uk-button uk-column-1-3 uk-button-small uk-button-primary aButton" onClick={this.handleGenerateSeedClick}>Generate Entropy</button>
+		   				<label className="inputLabel">Input seed or press "generate entropy" to generate 
+		   					entropy. Entropy amount has to be a multiple of 32 and in the range [128, 256] bits</label>
+		   				<input className={entropyClasses} type="text" ref="generatedEntropy" onChange={this.handleEntropyChanged} 
+		   					placeholder="Entropy" pattern="[A-Za-z]{3}"></input>
+		   				<button className="uk-button uk-column-1-3 uk-button-small uk-button-primary aButton generateEntropyButton" onClick={this.handleGenerateEntropyClicked}>Generate Entropy</button>
 					 </div>
 					 
 					 
 					 
-					 
+					 {/* Mnemonic section */}
 	       			<div className="uk-margin inputRow"  style={{opacity: this.state.wordsOpacity, pointerEvents: this.state.wordsEvents}}>
-		   				<label className="inputLabel">Input words or press "generate words" to generate words</label>
-		   				<input className="uk-input uk-column-1-1 uk-form-small inputField" type="text" ref="generatedWords" onChange={this.handleWordsChanged} placeholder="Seed words"></input>
-		   				<button className="uk-button uk-column-1-3 uk-button-small uk-button-primary aButton" onClick={this.handleGenerateClick}>Generate words</button>
+		   				<label className="inputLabel">Input words or press "generate words" to generate mnemonic words</label>
+		   				<input className="uk-input uk-column-1-1 uk-form-small inputField" type="text" ref="generatedWords" 
+		   					onChange={this.handleWordsChanged} placeholder="Mnemonic words"></input>
+		   				<button className="uk-button uk-column-1-3 uk-button-small uk-button-primary aButton" 
+		   					onClick={this.handleGenerateClick}>Generate words</button>
 					 </div>   
 					 
 					 
 					 
-					 
+					 {/* Passphrase and seed section */}
 					 <div className="uk-margin inputRow">   
 					 	
 					 	<div className="formElement">

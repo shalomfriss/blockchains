@@ -76,7 +76,7 @@ class App extends Component {
       <div className="App">
 	  	
         <header className="App-header">
-          <h1 className="App-title">Bip32</h1>
+          <h1 className="App-title">BIP32 + BIP39</h1>
         </header>
         
             
