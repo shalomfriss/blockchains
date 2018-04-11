@@ -9,15 +9,27 @@ export class BipComponent extends React.Component {
 	    this.state = {
 		    words: "",
 		    passphrase: "", 
-		    seed: ""
+		    seed: "",
+		    entropyOpacity: 0.4,
+		    wordsOpacity: 1,
+		    entropyEvents: "none",
+		    wordsEvents: "all",
+		    entropyEnabled: false
 		};
-	
+		
 	    // This binding is necessary to make `this` work in the callback
 	    this.handleGenerateClick = this.handleGenerateClick.bind(this)
 	    this.handlePassphraseChange = this.handlePassphraseChange.bind(this)
 	    this.handleWordsChanged = this.handleWordsChanged.bind(this)
+	    this.handleEntropyCheckboxClick = this.handleEntropyCheckboxClick.bind(this)
+	    this.handleGenerateEntropyClicked = this.handleGenerateEntropyClicked.bind(this)
+	    
+	    
 	}
 	
+	componentDidMount() {
+		this.disableEntropyMode()
+	}
 	/**
 		The passphrase changed	
 	*/
@@ -31,6 +43,8 @@ export class BipComponent extends React.Component {
 			words: words,
 			seed: seed
 		})
+		
+		Bip39.generateEntropyFromWords(words)
   	}
   	
   	/**
@@ -48,6 +62,8 @@ export class BipComponent extends React.Component {
 		})
 		
 		this.refs.generatedWords.value = words
+		
+		Bip39.generateEntropyFromWords(words)
 	}
 	
 	/**
@@ -63,24 +79,71 @@ export class BipComponent extends React.Component {
 			words: words,
 			seed: seed
 		})
+		
+		Bip39.generateEntropyFromWords(words)
 	}
+	
+	
+	handleGenerateEntropyClicked() {
+		console.log("ENT")	
+	}
+	
+	handleEntropyCheckboxClick() {
+		console.log("test")
+		this.setState({entropyEnabled: !this.state.entropyEnabled})
+		
+		if(this.state.entropyEnabled === true) {
+			this.disableEntropyMode()
+		}
+		else {
+			this.enableEntropyMode()
+		}
+	}
+	
+	enableEntropyMode() {
+		this.setState({
+			entropyOpacity: 1, 
+			entropyEvents: "all",
+			wordsOpacity: 0.4,
+			wordsEvents: "none"
+		})
+	}
+	
+	disableEntropyMode() {
+		this.setState({
+			entropyOpacity: 0.4, 
+			entropyEvents: "none",
+			wordsOpacity: 1,
+			wordsEvents: "all"
+		})
+	}
+	
 	
 	render() {
 	    return (
 	       <div className="uk-container uk-padding  Bip32Container">
 	       			
-	       			<div className="uk-margin inputRow">
-		   				<label className="inputLabel">Input seed or press "generate seed" to generate seed</label>
-		   				<input className="uk-input uk-column-1-1 uk-form-small inputField" type="text" ref="generatedSeed" onChange={this.handleSeedChanged} placeholder="Seed"></input>
-		   				<button className="uk-button uk-column-1-3 uk-button-small uk-button-primary aButton" onClick={this.handleGenerateSeedClick}>Generate Seed</button>
+	       			<div className="uk-margin inputRow entropyRow">
+	       				<input type="checkbox" className="entropyCheckbox" onChange={this.handleEntropyCheckboxClick}></input>
+	       				<label className="entropyCheckboxLabel">Use manual entropy</label>
+	       			</div>
+	       			
+	       			<div className="uk-margin inputRow"  style={{opacity: this.state.entropyOpacity, pointerEvents: this.state.entropyEvents}}>
+		   				<label className="inputLabel">Input seed or press "generate entropy" to generate entropy</label>
+		   				<input className="uk-input uk-column-1-1 uk-form-small inputField" type="text" ref="generatedSeed" onChange={this.handleGenerateEntropyClicked} placeholder="Seed"></input>
+		   				<button className="uk-button uk-column-1-3 uk-button-small uk-button-primary aButton" onClick={this.handleGenerateSeedClick}>Generate Entropy</button>
 					 </div>
 					 
 					 
-	       			<div className="uk-margin inputRow">
+					 
+					 
+	       			<div className="uk-margin inputRow"  style={{opacity: this.state.wordsOpacity, pointerEvents: this.state.wordsEvents}}>
 		   				<label className="inputLabel">Input words or press "generate words" to generate words</label>
 		   				<input className="uk-input uk-column-1-1 uk-form-small inputField" type="text" ref="generatedWords" onChange={this.handleWordsChanged} placeholder="Seed words"></input>
 		   				<button className="uk-button uk-column-1-3 uk-button-small uk-button-primary aButton" onClick={this.handleGenerateClick}>Generate words</button>
 					 </div>   
+					 
+					 
 					 
 					 
 					 <div className="uk-margin inputRow">   

@@ -113,3 +113,15 @@ formElement input {
 	height: auto;
 }
 
+.entropyRow {
+	    min-height: 25px;
+}
+
+.entropyCheckboxLabel {
+	float:left;
+}
+
+.entropyCheckbox {
+	float:left;
+}
+

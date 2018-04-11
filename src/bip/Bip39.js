@@ -46,11 +46,26 @@ export class Bip39 {
 	*/
 	static generateEntropyFromWords(wordString:String) {
 		var words = wordString.split(" ")
+		console.log(words)
+		var indices = []
 		for(var i = 0; i < words.length; i++) {
 			var word = words[i].trim()
 			var ind = Bip39.wordsRev[word]
-			console.log("INDEX: " + ind)
+			indices.push(ind)
+			
+			console.log("INDEX: " + word + " - " + ind + " - " +  Words.words[ind] )
+			
+			
 		}
+		
+		var preparedArrayBuffer = new Uint32Array(indices);
+		var bytes = new Uint8Array(preparedArrayBuffer);
+		var result = sjcl.codec.bytes.toBits(bytes);
+		
+		//var checksum =  sjcl.bitArray.bitSlice(result, 0, checksumLengthInBits)
+		console.log(result)
+		
+		
 	}
 	
 	

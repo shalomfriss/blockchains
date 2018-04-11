@@ -74,14 +74,12 @@ class App extends Component {
     
     return (
       <div className="App">
-      	
-	  	
 	  	
         <header className="App-header">
-          <h1 className="App-title">Cryptocurrency</h1>
+          <h1 className="App-title">Bip32</h1>
         </header>
         
-        <h1 className="uk-h1 heading1">Bip32</h1>        
+            
 		
         
 		<BipComponent></BipComponent>
