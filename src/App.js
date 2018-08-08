@@ -14,6 +14,9 @@ import "uikit/dist/js/uikit.min.js";
 import "uikit/dist/js/uikit-icons.min.js";
 import "./fonts/fonts.css";
 import { BipComponent } from './components/BipComponent';
+import { Transaction } from './transactions/Transaction';
+import { TransactionBuilder } from './transactions/TransactionBuilder';
+import { VarInt } from './utils/VarInt';
 
 class App extends Component {
   render() {
@@ -71,6 +74,16 @@ class App extends Component {
    	console.log("Master public key: " + keys.M)       
     */
     
+    var tx = new Transaction()
+    console.log(tx)
+    
+    
+    var vi = new VarInt()
+    console.log("-------------------------------------------->")
+    vi.value = "0xf1ffffffffffff"
+    console.log("VI: " + vi.value)
+    console.log(vi)
+	
     
     return (
       <div className="App">
@@ -80,8 +93,6 @@ class App extends Component {
         </header>
         
             
-		
-        
 		<BipComponent></BipComponent>
         
       </div>

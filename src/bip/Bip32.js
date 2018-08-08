@@ -207,7 +207,7 @@ export class Bip32 {
 			return
 		}		
 		
-		//Check for public key
+		//Check for public key 
 		if(parentPublicKey.isPrivate == true) {
 			console.log("***ERROR: MUST HAVE PUBLIC KEY")
 			return 

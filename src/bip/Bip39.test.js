@@ -161,7 +161,6 @@ test('Check all test vectors', () => {
 		var keys = Bip32.createMasterKeys(seed)
 		var masterPrivateKey = Bip32.serializeKey(keys.m) 
 		
-		console.log(mnemonic)
 		//console.log(Bip39.generateEntropyFromWords())
 		
 		expect(mnemonic).toEqual(vector[1])

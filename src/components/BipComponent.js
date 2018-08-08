@@ -21,12 +21,12 @@ export class BipComponent extends React.Component {
 		};
 		
 	    // This binding is necessary to make `this` work in the callback
-	    this.handleGenerateClick = this.handleGenerateClick.bind(this)
-	    this.handlePassphraseChange = this.handlePassphraseChange.bind(this)
-	    this.handleWordsChanged = this.handleWordsChanged.bind(this)
-	    this.handleEntropyCheckboxClick = this.handleEntropyCheckboxClick.bind(this)
-	    this.handleGenerateEntropyClicked = this.handleGenerateEntropyClicked.bind(this)
-	    this.handleEntropyChanged = this.handleEntropyChanged.bind(this)
+	    this.handleGenerateClick 			= this.handleGenerateClick.bind(this)
+	    this.handlePassphraseChange 		= this.handlePassphraseChange.bind(this)
+	    this.handleWordsChanged 			= this.handleWordsChanged.bind(this)
+	    this.handleEntropyCheckboxClick 	= this.handleEntropyCheckboxClick.bind(this)
+	    this.handleGenerateEntropyClicked 	= this.handleGenerateEntropyClicked.bind(this)
+	    this.handleEntropyChanged 			= this.handleEntropyChanged.bind(this)
 	    
 	}
 	
@@ -58,6 +58,8 @@ export class BipComponent extends React.Component {
 		var passphrase = this.state.passphrase
 		var words = Bip39.generateMnemonicWords()
 		var seed = Bip39.createSeed(words, passphrase)
+		var keys = Bip32.createMasterKeys(seed)
+		console.log(keys)
 		
 		this.setState({
 			passphrase: passphrase,
@@ -77,6 +79,7 @@ export class BipComponent extends React.Component {
 		var passphrase = this.state.passphrase
 		var words = this.refs.generatedWords.value
 		var seed = Bip39.createSeed(words, passphrase)
+		var keys = Bip32.createMasterKeys(seed)
 		
 		this.setState({
 			passphrase: passphrase, 
@@ -106,6 +109,9 @@ export class BipComponent extends React.Component {
 		
 		var passphrase = this.state.passphrase
 		var seed = Bip39.createSeed(words, passphrase)
+		var keys = Bip32.createMasterKeys(seed)
+		console.log("KEYS E--------")
+		console.log(keys)
 		
 		this.setState({
 			passphrase: passphrase, 
@@ -124,7 +130,7 @@ export class BipComponent extends React.Component {
 		
 		
 		var amount = entropyInput.length
-		console.log(amount*4)
+		
 		if((amount * 4) % 32 != 0 || amount * 4 < 128 || amount * 4 > 256) {
 			console.log("ERROR: Entropy amount has to be a multiple of 32 and in the range [128, 256] bits")
 			this.refs.generatedWords.value = ""
@@ -137,8 +143,13 @@ export class BipComponent extends React.Component {
 		var words = Bip39.generateMnemonicWordsFromEntropy(entropyInput)
 		this.refs.generatedWords.value = words
 		
+		
+		
 		var passphrase = this.state.passphrase
 		var seed = Bip39.createSeed(words, passphrase)
+		var keys = Bip32.createMasterKeys(seed)
+		console.log("KEYS--------")
+		console.log(keys)
 		
 		this.setState({
 			entropy: entropyInput,
@@ -166,6 +177,10 @@ export class BipComponent extends React.Component {
 		}
 	}
 	
+	
+	/******************************************************************************/
+	//UTILS
+	/******************************************************************************/
 	/**
 		Enable the entropy section	
 	*/
@@ -211,6 +226,7 @@ export class BipComponent extends React.Component {
 	       				<label className="entropyCheckboxLabel">Use manual entropy</label>
 	       			</div>
 	       			
+	       			
 	       			{/* Entropy section */}
 	       			<div className="uk-margin inputRow"  style={{opacity: this.state.entropyOpacity, pointerEvents: this.state.entropyEvents}}>
 		   				<label className="inputLabel">Input seed or press "generate entropy" to generate 
@@ -221,7 +237,6 @@ export class BipComponent extends React.Component {
 					 </div>
 					 
 					 
-					 
 					 {/* Mnemonic section */}
 	       			<div className="uk-margin inputRow"  style={{opacity: this.state.wordsOpacity, pointerEvents: this.state.wordsEvents}}>
 		   				<label className="inputLabel">Input words or press "generate words" to generate mnemonic words</label>
@@ -230,7 +245,6 @@ export class BipComponent extends React.Component {
 		   				<button className="uk-button uk-column-1-3 uk-button-small uk-button-primary aButton" 
 		   					onClick={this.handleGenerateClick}>Generate words</button>
 					 </div>   
-					 
 					 
 					 
 					 {/* Passphrase and seed section */}
@@ -246,6 +260,23 @@ export class BipComponent extends React.Component {
 							<input className="uk-input uk-form-small inputField" type="text" ref="seed" value={this.state.seed} placeholder="Seed"></input>
 					    </div>
 					</div>
+					
+					
+					{/* Key section  */}
+					<div className="uk-margin inputRow">   
+					 	
+					 	<div className="formElement">
+					 		<label className="inputLabel">Private Key</label>
+					    	<input className="uk-input uk-form-small inputField" type="text" ref="privateKey" placeholder="Private Key" style={{opacity: 0.8, pointerEvents: "none"}} value={this.state.privateKey}></input>
+					    </div>
+					    
+					    <div className="formElement">
+					    	<label className="inputLabel">Public Key</label>
+							<input className="uk-input uk-form-small inputField" type="text" ref="publicKey" placeholder="Public Key" style={{opacity: 0.8, pointerEvents: "none"}} value={this.state.publicKey}></input>
+					    </div>
+					</div>
+					
+					
 					
 			</div>
 
