@@ -13,8 +13,8 @@ import { TransactionOutput } from './TransactionOutput';
 export class Transaction {
 	
 	constructor() {
-		this.version = 1
-		this.locktime = 0
+		this.version = "01000000"
+		this.locktime = "00000000"
 		this.inputs = []
 		this.outputs = []
 	}

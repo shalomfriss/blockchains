@@ -17,7 +17,6 @@ export class BipComponent extends React.Component {
 		    entropyEnabled: false,
 		    entropyFieldValid: false,
 		    entropy: ""
-		    
 		};
 		
 	    // This binding is necessary to make `this` work in the callback

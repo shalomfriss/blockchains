@@ -8,7 +8,7 @@ export class TransactionOutput {
 		var obj = {}
 		obj.value = this.value
 		obj.scriptPubKey = this.vout
-				
+		
 		return JSON.stringify(obj)
 	}
 	

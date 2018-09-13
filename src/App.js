@@ -80,7 +80,7 @@ class App extends Component {
     
     var vi = new VarInt()
     console.log("-------------------------------------------->")
-    vi.value = "0xf1ffffffffffff"
+    vi.value = "0x123456789"
     console.log("VI: " + vi.value)
     console.log(vi)
 	

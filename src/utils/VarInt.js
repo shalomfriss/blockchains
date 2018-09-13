@@ -15,7 +15,7 @@ export class VarInt {
 	}
 	
 	get value() {
-		return this.prefix + this.postfix
+		return this.prefix + this.changeEndianness(this.postfix)
 	}
 	
 	set value(aValue) {
@@ -37,30 +37,49 @@ export class VarInt {
 		
 		if(lim1.greaterEquals(bn)) {
 			this.prefix = ""
+			if(this.postfix.length % 2 != 0) { 
+				this.postfix = this.postfix.padStart(2, '0')
+			}
 			return 
 		} 
 		
 		if(lim2.greaterEquals(bn)) {
-			console.log("LIM2")
 			this.prefix = "fd"
+			if(this.postfix.length % 2 != 0) { 
+				this.postfix = this.postfix.padStart(4, '0')
+			}
 			return
 		}
 		
 		if(lim3.greaterEquals(bn)) {
-			console.log("LIM3")
 			this.prefix = "fe"
+			if(this.postfix.length % 2 != 0) { 
+				this.postfix = this.postfix.padStart(8, '0')
+			}
 			return
 		}
 		
 		if(lim4.greaterEquals(bn)) {
-			console.log("LIM4")
 			this.prefix = "ff"
+			if(this.postfix.length % 2 != 0) { 
+				this.postfix = this.postfix.padStart(16, '0')
+				console.log("PAD: " + this.postfix.padStart(16, '0'))
+			}
 			return
 		}
 		
 		throw "Number is not in VarInt range!";
 	}
 	
+	changeEndianness(string) {
+        const result = [];
+        let len = string.length - 2;
+        while (len >= 0) {
+          result.push(string.substr(len, 2));
+          len -= 2;
+        }
+        return result.join('');
+	}
 	
 	
 }
