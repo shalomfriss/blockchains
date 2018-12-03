@@ -29,5 +29,5 @@ test('Make sure endianess conversion is working', () => {
 	hex = "120"
 	expect(ByteUtils.toLittleEndian(hex)).toEqual("201")
 	expect(ByteUtils.toBigEndian(hex)).toEqual("012")
-
+	
 })

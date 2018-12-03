@@ -63,7 +63,7 @@ export class VarInt {
 			this.prefix = "ff"
 			if(this.postfix.length % 2 != 0) { 
 				this.postfix = this.postfix.padStart(16, '0')
-				console.log("PAD: " + this.postfix.padStart(16, '0'))
+				//console.log("PAD: " + this.postfix.padStart(16, '0'))
 			}
 			return
 		}

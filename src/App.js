@@ -75,14 +75,14 @@ class App extends Component {
     */
     
     var tx = new Transaction()
-    console.log(tx)
+    //console.log(tx)
     
     
     var vi = new VarInt()
-    console.log("-------------------------------------------->")
+    //console.log("-------------------------------------------->")
     vi.value = "0x123456789"
-    console.log("VI: " + vi.value)
-    console.log(vi)
+    //console.log("VI: " + vi.value)
+    //console.log(vi)
 	
     
     return (
